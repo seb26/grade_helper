@@ -1,0 +1,773 @@
+<?xml version="1.0" ?>
+<ColorCorrectionCollection xmlns="urn:ASC:CDL:v1.2">
+	<ColorCorrection id="B001C001_220507_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B001C002_220507_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B001C003_220507_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B001C004_220507_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B001C005_220507_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B001C006_220507_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B001C007_220507_R6VL">
+		<SOPNode>
+			<Slope>0.741799 0.741799 0.741799</Slope>
+			<Offset>0.061014 0.061014 0.061014</Offset>
+			<Power>0.941620 0.941620 0.941620</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B001C008_220507_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B001C009_220507_R6VL">
+		<SOPNode>
+			<Slope>0.883593 0.883593 0.883593</Slope>
+			<Offset>-0.015623 -0.015623 -0.015623</Offset>
+			<Power>0.924214 0.924214 0.924214</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B001C010_220507_R6VL">
+		<SOPNode>
+			<Slope>0.883593 0.883593 0.883593</Slope>
+			<Offset>-0.015623 -0.015623 -0.015623</Offset>
+			<Power>0.924214 0.924214 0.924214</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C001_220507_R6VL">
+		<SOPNode>
+			<Slope>0.883593 0.883593 0.883593</Slope>
+			<Offset>-0.015623 -0.015623 -0.015623</Offset>
+			<Power>0.924214 0.924214 0.924214</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C002_220507_R6VL">
+		<SOPNode>
+			<Slope>0.883593 0.883593 0.883593</Slope>
+			<Offset>-0.015623 -0.015623 -0.015623</Offset>
+			<Power>0.924214 0.924214 0.924214</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C003_220507_R6VL">
+		<SOPNode>
+			<Slope>0.830054 0.830054 0.830054</Slope>
+			<Offset>-0.027294 -0.027294 -0.027294</Offset>
+			<Power>0.833333 0.833333 0.833333</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C004_220507_R6VL">
+		<SOPNode>
+			<Slope>0.830054 0.830054 0.830054</Slope>
+			<Offset>-0.027294 -0.027294 -0.027294</Offset>
+			<Power>0.833333 0.833333 0.833333</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C005_220507_R6VL">
+		<SOPNode>
+			<Slope>0.830054 0.830054 0.830054</Slope>
+			<Offset>-0.027294 -0.027294 -0.027294</Offset>
+			<Power>0.833333 0.833333 0.833333</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C006_220507_R6VL">
+		<SOPNode>
+			<Slope>0.830054 0.830054 0.830054</Slope>
+			<Offset>-0.027294 -0.027294 -0.027294</Offset>
+			<Power>0.833333 0.833333 0.833333</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C007_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C008_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C009_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B002C010_220507_R6VL">
+		<SOPNode>
+			<Slope>0.805026 0.805026 0.805026</Slope>
+			<Offset>-0.070513 -0.070513 -0.070513</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C001_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C002_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C003_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C004_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C005_220507_R6VL">
+		<SOPNode>
+			<Slope>0.832732 0.832732 0.832732</Slope>
+			<Offset>-0.107356 -0.107356 -0.107356</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C006_220507_R6VL">
+		<SOPNode>
+			<Slope>0.832732 0.832732 0.832732</Slope>
+			<Offset>-0.107356 -0.107356 -0.107356</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C007_220507_R6VL">
+		<SOPNode>
+			<Slope>0.793093 0.793093 0.793093</Slope>
+			<Offset>-0.054645 -0.054645 -0.054645</Offset>
+			<Power>0.637755 0.637755 0.637755</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C008_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C009_220507_R6VL">
+		<SOPNode>
+			<Slope>0.825341 0.825341 0.825341</Slope>
+			<Offset>-0.097527 -0.097527 -0.097527</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C010_220507_R6VL">
+		<SOPNode>
+			<Slope>1.026000 1.026000 1.026000</Slope>
+			<Offset>-0.026000 -0.026000 -0.026000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C011_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C012_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C013_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C014_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C015_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C016_220507_R6VL">
+		<SOPNode>
+			<Slope>0.790910 0.790910 0.790910</Slope>
+			<Offset>-0.051742 -0.051742 -0.051742</Offset>
+			<Power>0.732064 0.732064 0.732064</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C017_220507_R6VL">
+		<SOPNode>
+			<Slope>1.437326 1.437326 1.437326</Slope>
+			<Offset>-0.044568 -0.044568 -0.044568</Offset>
+			<Power>1.128000 1.128000 1.128000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C018_220507_R6VL">
+		<SOPNode>
+			<Slope>1.437326 1.437326 1.437326</Slope>
+			<Offset>-0.044568 -0.044568 -0.044568</Offset>
+			<Power>1.128000 1.128000 1.128000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B003C019_220507_R6VL">
+		<SOPNode>
+			<Slope>1.437326 1.437326 1.437326</Slope>
+			<Offset>-0.044568 -0.044568 -0.044568</Offset>
+			<Power>1.128000 1.128000 1.128000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C001_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C002_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C003_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C004_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C005_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C006_220508_R6VL">
+		<SOPNode>
+			<Slope>0.854033 0.854033 0.854033</Slope>
+			<Offset>-0.026482 -0.026482 -0.026482</Offset>
+			<Power>0.822368 0.822368 0.822368</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C007_220508_R6VL">
+		<SOPNode>
+			<Slope>0.854033 0.854033 0.854033</Slope>
+			<Offset>-0.026482 -0.026482 -0.026482</Offset>
+			<Power>0.822368 0.822368 0.822368</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C008_220508_R6VL">
+		<SOPNode>
+			<Slope>0.854033 0.854033 0.854033</Slope>
+			<Offset>-0.026482 -0.026482 -0.026482</Offset>
+			<Power>0.822368 0.822368 0.822368</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C009_220508_R6VL">
+		<SOPNode>
+			<Slope>0.854033 0.854033 0.854033</Slope>
+			<Offset>-0.026482 -0.026482 -0.026482</Offset>
+			<Power>0.822368 0.822368 0.822368</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C010_220508_R6VL">
+		<SOPNode>
+			<Slope>0.745854 0.745854 0.745854</Slope>
+			<Offset>-0.024525 -0.024525 -0.024525</Offset>
+			<Power>0.823723 0.823723 0.823723</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C011_220508_R6VL">
+		<SOPNode>
+			<Slope>0.785406 0.785406 0.785406</Slope>
+			<Offset>-0.050007 -0.050007 -0.050007</Offset>
+			<Power>0.673854 0.673854 0.673854</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C012_220508_R6VL">
+		<SOPNode>
+			<Slope>0.785406 0.785406 0.785406</Slope>
+			<Offset>-0.050007 -0.050007 -0.050007</Offset>
+			<Power>0.673854 0.673854 0.673854</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C013_220508_R6VL">
+		<SOPNode>
+			<Slope>0.801510 0.801510 0.801510</Slope>
+			<Offset>-0.071537 -0.071537 -0.071537</Offset>
+			<Power>0.673854 0.673854 0.673854</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C014_220508_R6VL">
+		<SOPNode>
+			<Slope>0.801510 0.801510 0.801510</Slope>
+			<Offset>-0.071537 -0.071537 -0.071537</Offset>
+			<Power>0.673854 0.673854 0.673854</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B004C015_220508_R6VL">
+		<SOPNode>
+			<Slope>0.745854 0.745854 0.745854</Slope>
+			<Offset>-0.024525 -0.024525 -0.024525</Offset>
+			<Power>0.823723 0.823723 0.823723</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C001_220508_R6VL">
+		<SOPNode>
+			<Slope>0.810667 0.810667 0.810667</Slope>
+			<Offset>-0.066628 -0.066628 -0.066628</Offset>
+			<Power>0.624220 0.624220 0.624220</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C002_220508_R6VL">
+		<SOPNode>
+			<Slope>0.810667 0.810667 0.810667</Slope>
+			<Offset>-0.066628 -0.066628 -0.066628</Offset>
+			<Power>0.624220 0.624220 0.624220</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C003_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C004_220508_R6VL">
+		<SOPNode>
+			<Slope>0.878011 0.878011 0.878011</Slope>
+			<Offset>-0.086710 -0.086710 -0.086710</Offset>
+			<Power>0.713267 0.713267 0.713267</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C005_220508_R6VL">
+		<SOPNode>
+			<Slope>0.878011 0.878011 0.878011</Slope>
+			<Offset>-0.086710 -0.086710 -0.086710</Offset>
+			<Power>0.713267 0.713267 0.713267</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C006_220508_R6VL">
+		<SOPNode>
+			<Slope>0.878011 0.878011 0.878011</Slope>
+			<Offset>-0.086710 -0.086710 -0.086710</Offset>
+			<Power>0.713267 0.713267 0.713267</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C007_220508_R6VL">
+		<SOPNode>
+			<Slope>0.752131 0.752131 0.752131</Slope>
+			<Offset>-0.081636 -0.081636 -0.081636</Offset>
+			<Power>0.639386 0.639386 0.639386</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C008_220508_R6VL">
+		<SOPNode>
+			<Slope>0.757432 0.757432 0.757432</Slope>
+			<Offset>-0.031922 -0.031922 -0.031922</Offset>
+			<Power>0.677507 0.677507 0.677507</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C009_220508_R6VL">
+		<SOPNode>
+			<Slope>0.777236 0.777236 0.777236</Slope>
+			<Offset>-0.058903 -0.058903 -0.058903</Offset>
+			<Power>0.677507 0.677507 0.677507</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C010_220508_R6VL">
+		<SOPNode>
+			<Slope>0.778268 0.778268 0.778268</Slope>
+			<Offset>-0.060309 -0.060309 -0.060309</Offset>
+			<Power>0.677507 0.677507 0.677507</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C011_220508_R6VL">
+		<SOPNode>
+			<Slope>0.883341 0.883341 0.883341</Slope>
+			<Offset>-0.022385 -0.022385 -0.022385</Offset>
+			<Power>0.900901 0.900901 0.900901</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C012_220508_R6VL">
+		<SOPNode>
+			<Slope>0.883341 0.883341 0.883341</Slope>
+			<Offset>-0.022385 -0.022385 -0.022385</Offset>
+			<Power>0.900901 0.900901 0.900901</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C013_220508_R6VL">
+		<SOPNode>
+			<Slope>0.881251 0.881251 0.881251</Slope>
+			<Offset>-0.022332 -0.022332 -0.022332</Offset>
+			<Power>0.837521 0.837521 0.837521</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C014_220508_R6VL">
+		<SOPNode>
+			<Slope>0.883341 0.883341 0.883341</Slope>
+			<Offset>-0.022385 -0.022385 -0.022385</Offset>
+			<Power>0.900901 0.900901 0.900901</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C015_220508_R6VL">
+		<SOPNode>
+			<Slope>0.890743 0.890743 0.890743</Slope>
+			<Offset>-0.030952 -0.030952 -0.030952</Offset>
+			<Power>0.816993 0.816993 0.816993</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C016_220508_R6VL">
+		<SOPNode>
+			<Slope>0.890743 0.890743 0.890743</Slope>
+			<Offset>-0.030952 -0.030952 -0.030952</Offset>
+			<Power>0.816993 0.816993 0.816993</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C017_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C018_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C019_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C020_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C021_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C022_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="B005C023_220508_R6VL">
+		<SOPNode>
+			<Slope>1.000000 1.000000 1.000000</Slope>
+			<Offset>0.000000 0.000000 0.000000</Offset>
+			<Power>1.000000 1.000000 1.000000</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+</ColorCorrectionCollection>
