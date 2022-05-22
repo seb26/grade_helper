@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="resources/bootstrap-5.2.0-beta1-dist/bootstrap.min.css">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+    <section class="app-input">
+        <h3>Add CDLs (multiple)</h3>
+        <div id="app_input_drop_area" class="col-3">
+            <form id="app_input_cdl">
+                <label for="app_input_cdl_filepicker" class="form-label">Select file(s):</label>
+                <input type="file" class="form-control" id="app_input_cdl_filepicker" multiple>
+
+            </form>
+        </div>
+    </section>
+    <section class="app-input-view">
+        <h3>View CDL data
+            <input type="button" class="btn btn-outline-dark" id="app_input_cdl_clear" value="Clear">
+        </h3>
+         
+        <table class="table table-sm app_input_active_cdls_table">
+            <thead>
+                <tr>
+                    <th scope="col">CDL filename</th>
+                    <th scope="col">ASC_SOP</th>
+                    <th scope="col">ASC_SAT</th>
+                </tr>
+            </thead>
+            <tbody class="app_input_active_cdls_tbody" id="app_input_active_cdls_tbody">
+            </tbody>
+        </table>
+    </section>
+    <section class="app-output">
+        <h3>Export</h3>
+        <input type="button" class="btn btn-outline-primary" id="app_output_ccc" value="Export CCC" data-output-filetype='ccc'> 
+        <input type="button" class="btn btn-outline-primary" id="app_output_cdl" value="Export CDL" data-output-filetype='cdl'> 
+
+    </section>
+
+
+
+    <script type="text/javascript" src="lib.js"></script>
+    <script type="text/javascript" src="app.js"></script>
+
+</body>
+</html>
