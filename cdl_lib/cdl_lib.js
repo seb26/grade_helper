@@ -15,16 +15,19 @@ const ASC_CDL_FILETYPE_CDL = {
 // Lib
 class CDLLib {
 
-    parse_xml(cdl_data, source_file_name) {
+    parse_xml(cdl_data_as_xml, source_file_name) {
 
         var parser = new DOMParser();
-        var root = parser.parseFromString( cdl_data, 'application/xml' );
+        var root = parser.parseFromString( cdl_data_as_xml, 'application/xml' );
         var color_items = [];
 
         var ColorCorrections = root.getElementsByTagName('ColorCorrection');
         if ( ColorCorrections.length > 0 ) {
             for ( let i = 0; i < ColorCorrections.length; i++ ) {
-                var color_object = new ColorCorrection( ColorCorrections[i], source_file_name );
+                var color_object = new ColorCorrection(
+                    ColorCorrections[i],
+                    source_file_name,
+                );
                 color_items.push( color_object );
             }
         }
@@ -43,12 +46,13 @@ class CDLLib {
 
         // EDL patterns
         const pattern_event = /^(?<num>\d{3,6})\s{2}(?<reel>.*?)\sV\s{5}C\s{8}(?<sourcetc_in>\d{2}:\d{2}:\d{2}:\d{2})\s(?<sourcetc_out>.*?)\s(?<rectc_in>.*?)\s(?<rectc_out>.*?)\s{2}\n(?<comments>.*)$/ms;
+        const pattern_event_separator = /\r?\n\r?\n/m;
         const pattern_sop = /ASC_SOP\s(?<sop>\(.*?\)\(.*?\)\(.*?\))/;
         const pattern_sat = /ASC_SAT\s(?<sat>\d\.\d{1,10})/;
 
         // Ensure the final event is parsed also, by having sufficient newlines to match
         edl_data = edl_data + '\n\n';
-        var edl_segments = edl_data.split('\n\n');
+        var edl_segments = edl_data.split(pattern_event_separator);
 
         // Test for EDL structure
         var header = edl_segments[0].split('\n');
@@ -61,7 +65,7 @@ class CDLLib {
         var edl_events = edl_segments.slice(1, edl_segments.length);
         // Filter out blank strings
         edl_events = edl_events.filter(item => item !== '\n' && item !== '' );
-        console.log( 'Events: ' + edl_events.length );
+        console.log( 'CDLLib: parse_edl: Events found: ' + edl_events.length );
 
         edl_events.forEach( (event) => {
             var match = pattern_event.exec(event);
@@ -76,15 +80,16 @@ class CDLLib {
 
                 var color_item = new ColorCorrection(
                     null,
-                    match.groups.reel,
                     source_file_name,
                     sop,
                     sat,
                 );
-
-                console.log( color_item );
+                color_item.set_identifier(match.groups.reel);
+                color_items.push( color_item );
             }
         });
+
+        return color_items;
 
     }
 
@@ -98,31 +103,11 @@ class CDLLib {
         var out_file;
 
         ColorCorrections.forEach( (color_item) => {
-            var out_ColorCorrection = document.createElementNS(null, 'ColorCorrection');
-            var SOPNode = document.createElementNS(null, 'SOPNode');
-            var SATNode = document.createElementNS(null, 'SATNode');
-            out_ColorCorrection.appendChild( SOPNode );
-            out_ColorCorrection.appendChild( SATNode );
-
-            // Slope, Offset, Power
-            COLOR_FUNCTIONS.forEach( (func) => {
-                var func_node = document.createElementNS(null, func);
-                func_node.innerHTML = color_item.get_color_instruction_value_by_name(func);
-                SOPNode.appendChild(func_node);
-            });
-            // Saturation
-            var sat = document.createElementNS(null, 'Saturation')
-            sat.innerHTML = color_item.saturation;
-            SATNode.appendChild(sat);
-
-            // Add identifier (remove file extension)
-            out_ColorCorrection.id = color_item.source_file_name.slice(0, -4);
-
-            // Save
-            out_ColorCorrections.push( out_ColorCorrection );
+            out_ColorCorrections.push( color_item.node );
         });
 
         if ( file_ext == ASC_CDL_FILETYPE_CCC.file_ext ) {
+            // For CCC spec - create a <ColorCorrectionCollection> and place all our ColorCorrection(s) inside as direct children.
             var doc = document.implementation.createDocument(ASC_CDL_FILETYPE_CCC.xmlns, 'ColorCorrectionCollection');
             doc.documentElement.setAttribute('xmlns', ASC_CDL_FILETYPE_CCC.xmlns);
 
@@ -133,6 +118,7 @@ class CDLLib {
 
         }
         else if ( file_ext == ASC_CDL_FILETYPE_CDL.file_ext ) {
+            // For CDL spec - create a <ColorDecisionList>, and wrap each <ColorCorrection> inside a <ColorDecision> first.
             console.log('cdl!');
             var doc = document.implementation.createDocument(ASC_CDL_FILETYPE_CDL.xmlns, 'ColorDecisionList');
             doc.documentElement.setAttribute('xmlns', ASC_CDL_FILETYPE_CDL.xmlns);
@@ -163,15 +149,8 @@ class CDLLib {
 
 class ColorCorrection {
 
-    /*
-        slope = (1.0, 1.0, 1.0),
-        offset = (0.0, 0.0, 0.0),
-        power = (1.0, 1.0, 1.0),
-    */
-
     constructor(
         node = false,
-        identifier = false,
         source_file_name = false,
         ASC_SOP = '(1.000000 1.000000 1.000000)(0.000000 0.000000 0.000000)(1.000000 1.000000 1.000000)',
         ASC_SAT = '1.0',
@@ -180,6 +159,7 @@ class ColorCorrection {
         // Init values
         this.color = {};
         this.node = node;
+        this.identifier;
 
         // INIT:
         // If an existing <ColorCorrection> node is provided
@@ -190,8 +170,8 @@ class ColorCorrection {
                     this.identifier = this.node.id;
                 }
                 else if ( source_file_name ) {
-                    // Only add filename if there are no other identifiers inside.
-                    this.identifier = source_file_name;
+                    // Only add filename (without ext) if there are no other identifiers inside.
+                    this.identifier = source_file_name.split('.').shift();
                 }
             }
             // Parse the colour values within
@@ -217,11 +197,6 @@ class ColorCorrection {
 
             // Then create a node tree and fill it
             var node_cc = document.createElementNS(null, 'ColorCorrection');
-            // If an identifier is provided
-            if ( this.identifier ) {
-                // Write it to the node
-                node_cc.id = identifier;
-            }
 
             var node_SOP = document.createElementNS(null, 'SOPNode');
             node_cc.appendChild( node_SOP );
@@ -248,19 +223,9 @@ class ColorCorrection {
 
     }
 
-    get_color_instruction_value_by_name(name) {
-        if ( name == 'Slope' ) {
-            return this.slope;
-        }
-        else if ( name == 'Offset' ) {
-            return this.offset;
-        }
-        else if ( name == 'Power' ) {
-            return this.power;
-        }
-        else if ( name == 'Saturation' ) {
-            return this.saturation;
-        }
+    set_identifier(identifier) {
+        this.identifier = identifier;
+        this.node.id = identifier;
     }
 
     get slope() {
@@ -278,16 +243,16 @@ class ColorCorrection {
     get sop_as_string() {
         const format = ( c ) => `(${c['Slope']})(${c['Offset']})(${c['Power']})`;
         const c = {
-            'Slope': this.color.Slope,
-            'Offset': this.color.Offset,
-            'Power': this.color.Power,
+            'Slope': this.slope,
+            'Offset': this.offset,
+            'Power': this.power,
         };
         return format(c);
     }
     get sat_as_string() {
         const format = ( c ) => `(${c['Saturation']})`;
         const c = {
-            'Saturation': this.color.Saturation,
+            'Saturation': this.saturation,
         };
         return format(c);
     }

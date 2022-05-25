@@ -17,14 +17,17 @@
         </div>
     </section>
     <section class="app-input-view">
-        <h3>View CDL data
+        <div class="d-flex app-input-view-summary">
+            <div class="header"><h3>View CDL data</h3></div>
+            <div id="app_input_view_file_count">0 item(s)</div>
             <input type="button" class="btn btn-outline-dark" id="app_input_cdl_clear" value="Clear">
-        </h3>
+        </div>
          
         <table class="table table-sm app_input_active_cdls_table">
             <thead>
                 <tr>
-                    <th scope="col">CDL filename</th>
+                    <th scope="col">Input CDL filename</th>
+                    <th scope="col">CDL identifier</th>
                     <th scope="col">ASC_SOP</th>
                     <th scope="col">ASC_SAT</th>
                 </tr>
@@ -42,7 +45,7 @@
 
 
 
-    <script type="text/javascript" src="lib.js"></script>
+    <script type="text/javascript" src="../cdl_lib/cdl_lib.js"></script>
     <script type="text/javascript" src="app.js"></script>
 
 </body>

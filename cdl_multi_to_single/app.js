@@ -2,12 +2,20 @@ class App {
 
     constructor() {
         this.parsed_files = {};
-        this.color_item_set = new ColorItemSet();
+        this.color_items = []
     }
 
-    input_file_color(file, filename) {
-        // Need to identify filetype and distingusih between EDL and XML
-        this.color_item_set.add_cdl_from_xml(file, filename);
+    input_color_file(filetype, file_data, filename) {
+        var parsed_items;
+        if ( filetype == 'ccc' || filetype == 'cdl' ) {
+            parsed_items = cdllib.parse_xml(file_data, filename);
+        }
+        else if ( filetype == 'edl' ) {
+            parsed_items = cdllib.parse_edl(file_data, filename);
+        }
+        parsed_items.forEach( (item) => {
+            this.color_items.push(item);
+        });
     }
 
 }
@@ -17,7 +25,8 @@ function read_file_to_string( file, filename ) {
     let reader = new FileReader();
     reader.readAsBinaryString( file );
     reader.onloadend = function() {
-        app.input_file_color( reader.result, file.name );
+        var file_ext = file.name.split('.').pop();
+        app.input_color_file( file_ext, reader.result, file.name );
         event_update_file_list();
     }
 }
@@ -59,14 +68,19 @@ function event_read_files_selected(e) {
 }
 
 function event_update_file_list(e) {
-    var items = app.color_item_set.items;
+    var items = app.color_items;
     var tbody = document.getElementById('app_input_active_cdls_tbody');
     // Clear the table on each update to keep it current
     tbody.innerHTML = '';
+
+    // Then work.
+    event_update_file_count();
     items.forEach( (item) => {
         var row = tbody.insertRow(-1);
         var cell_source_file_name = row.insertCell(0);
         cell_source_file_name.innerHTML = item.source_file_name;
+        var cell_identifier = row.insertCell(1);
+        cell_identifier.innerHTML = item.identifier;
         var cell_sop = row.insertCell(-1);
         cell_sop.innerHTML = item.sop_as_string;
         var cell_sat = row.insertCell(-1);
@@ -74,20 +88,24 @@ function event_update_file_list(e) {
     });
 }
 
+function event_update_file_count(e) {
+    app_input_file_count.innerHTML = app.color_items.length + ' item(s)';
+}
+
 function event_clear_file_list(e) {
     // Clear the browser filepicker element
     app_input_cdl_filepicker.value = '';
     // And clear our stored list of files, AND color items
     app.parsed_files = {};
-    app.color_item_set = new ColorItemSet();
+    app.color_items = [];
     // Refresh display for user
     event_update_file_list();
 }
 
 function event_request_output_file_all(e) {
     var file_ext = e.target.dataset.outputFiletype;
-    var output_data = app.color_item_set.export(
-        app.color_item_set.items,
+    var output_data = cdllib.export(
+        app.color_items,
         file_ext
     );
     output_file_as_download( output_data, 'your name here' + '.' + file_ext );
@@ -95,11 +113,12 @@ function event_request_output_file_all(e) {
 
 // APP
 const app = new App();
-const color_item_set = new ColorItemSet();
+const cdllib = new CDLLib();
 
 // APP INTERFACE
 
 const app_input_cdl_filepicker = document.getElementById('app_input_cdl_filepicker');
+const app_input_file_count = document.getElementById('app_input_view_file_count');
 const app_input_cdl_clear = document.getElementById('app_input_cdl_clear');
 const app_input_drop_area = document.getElementById('app_input_drop_area');
 
