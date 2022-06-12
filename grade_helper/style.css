@@ -1,0 +1,52 @@
+.section {
+    padding: 2rem;
+}
+.input-ocn {
+    background: #ddd;
+}
+.input_grades {
+    background: #cfe2ff;
+}
+
+.droparea {
+    border: 1px solid grey;
+    background: none;
+    border-radius: 3px;
+    padding: .5rem;
+}
+
+
+.filelist_item 
+{
+    /* list-group-item d-flex justify-content-between align-items-center */
+
+}
+.filelist_item_eventnum
+{
+    /* badge bg-primary rounded-pill */
+}
+
+
+.clips_table {
+    background: #aaa;
+}
+
+.grades_table {
+    background: #9ec5fe;
+}
+
+th.col-graded {
+    background-color: #3d8bfd;
+    color: #fff;
+}
+td.col-graded {
+    background-color: #6ea8fe;
+    color: #fff;
+    font-weight: bold;
+}
+
+
+
+.export {
+    background: #eee;
+}
