@@ -2,12 +2,12 @@ section {
     padding: 2rem;
 }
 
-.app-input {
+.app-add-clips {
     background: #ccc;
 }
 
-.app-input-view { 
-    background: #eee;
+.app-add-grades { 
+    background: #9ecdff;
 }
 
 .app_input_active_cdls_tbody {

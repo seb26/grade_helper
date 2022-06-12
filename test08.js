@@ -1,6 +1,5 @@
-<script type="text/javascript" src="lib/cdl.js"></script>
-
-<script type="text/javascript">
+const EditDecisionList = require('./node_modules/edl-genius');
+const Timecode = require('timecode-boss');
 
 sample_edl = `TITLE: /Users/seb/Development/seb_cdl_utility/resources/resolve timeline - export as CDL (EDL).edl
 FCM: NON-DROP FRAME
@@ -23,24 +22,27 @@ COMMENT:*ASC_SAT 1.000000
 
 
 `;
-</script>
-<script type="text/javascript">
+
+sample_edl_path = '/Users/seb/Development/seb_cdl_utility/sample_files/resolve timeline - export as CDL (EDL).edl'
+
+let edl = new EditDecisionList(25, 'cmx3600');
+/*
+edl.readFile(sample_edl_path).then( (edl) => {
+    console.log( edl.events );
+});
+*/
+
+edl.fromString( sample_edl ).then( (edl) => {
+});
 
 
-// Get colour information
-var cdl_lib = new CDLLib();
 
-console.log( cdl_lib.parse_edl(sample_edl) );
+	
+let clip_tc_start = new Timecode('10:16:20:01', 25);
+let grade_tc_start = new Timecode('10:16:20:15', 25);
+let clip_tc_end = new Timecode('10:18:29:19', 25);
+let grade_tc_end = new Timecode('10:19:20:15', 25);
 
-// Get event information
+console.log( ( grade_tc_start >= clip_tc_start && grade_tc_start <= clip_tc_end ) );
 
-
-
-
-</script>
-<script type="module">
-import edlGenius from 'https://cdn.skypack.dev/edl-genius';
-
-console.log(edlGenius);
-
-</script>
+console.log('xx!')
