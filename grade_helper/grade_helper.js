@@ -42,6 +42,8 @@ ALE_COL_NAMES_DURATION = [ 'Duration', 'Clip Duration', ];
 ALE_COL_NAMES_FPS = [ 'FPS', 'Project FPS', 'Speed', ];
 ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', ]; /* In order of selection */
 
+DEFAULT_FPS_UNSPECIFIED = 25;
+
 class App {
 
     constructor() {
@@ -66,7 +68,6 @@ class App {
             parsed_items = csv.data;
         }
         else {
-            console.log('warning for ocn why');
             user_input_warning_trigger('app_input_ocn_warning', 'Only accepts files: .ale');
             event_clear_filelist_ocn();
             return;
@@ -74,6 +75,8 @@ class App {
         var count = 0;
         parsed_items.forEach( (item) => {
             count += 1;
+            // Save a space for matched grades
+            item['_matched_grades'] = [];
         	// Gather common metadata per clip for easy access within this app
         	// Name
             ALE_COL_NAMES_CLIPNAME.some( (name_field) => {
@@ -132,7 +135,6 @@ class App {
             });
             // If for some reason this item has no Start TC, End TC, FPS, Duration
             // Then it is not truly a clip. Remove it.
-            console.log(item);
             if ( !( item['_starttc'] && item['_endtc'] && item['_duration'] && item['_fps'] ) ) {
                 return;
             }
@@ -158,11 +160,7 @@ class App {
             parsed_items = cdllib.parse_edl(file_data, filename);
         }
         else if ( fileext == 'csv' ) {
-            var csv = Papa.parse(file_data, {
-                header: true,
-                skipEmptyLines: true,
-            });
-            parsed_items = csv.data;
+            parsed_items = cdllib.parse_csv(file_data, filename);
         }
         else {
             user_input_warning_trigger('app_input_grades_warning', 'Only accepts files: .ccc, .cdl, .edl');
@@ -184,14 +182,41 @@ class App {
         populate_filelist_grades();
     }
     match_grades_to_ocn_auto() {
-        this.grades.forEach( (grade) => {
+        this.ocn_clips.forEach( (ocn_clip) => {
 
-            this.ocn_clips.forEach( (ocn_clip) => {
+            this.grades.forEach( (grade) => {
                 // 1. Match by timecode
-
+                // First establish FPS
+                var fps;
+                if ( grade.fps ) {
+                    fps = grade.fps;
+                }
+                else if ( ocn_clip._fps ) {
+                    fps = ocn_clip._fps;
+                }
+                else {
+                    fps = DEFAULT_FPS_UNSPECIFIED;
+                }
+                // Convert to Timecode object to do comparison
+                if ( grade.metadata.start_tc && ocn_clip._starttc && ocn_clip._endtc ) {
+                    var grade_start_f = new Timecode(grade.metadata.start_tc, fps).frameCount();
+                    var ocn_clip_start_f = new Timecode(ocn_clip._starttc, fps).frameCount();
+                    var ocn_clip_end_f = new Timecode(ocn_clip._endtc, fps).frameCount();
+                    // If grade TC takes place *during* clip recording start/end
+                    if ( ( grade_start_f >= ocn_clip_start_f ) && ( ocn_clip_end_f >= grade_start_f ) ) {
+                        // Found a match!
+                        ocn_clip._matched_grades.push(grade);
+                    	// console.log(ocn_clip._name, ocn_clip_start_f, ocn_clip_end_f, grade.identifier, grade_start_f);
+                    }
+                }
+                else {
+                    // Cannot match by timecode
+                }
+                
             });
 
         });
+        populate_ocn_clips();
     }
 }
 
@@ -234,7 +259,7 @@ function populate_filelist_ocn() {
     var filelist = document.getElementById('app_input_ocn_filelist');
     var filelist_count = document.getElementById('app_input_ocn_filelist_count');
     // Clear the list to keep it current.
-    filelist.children = [];
+    filelist.replaceChildren();
 
     // Then populate.
     if ( app.input_files_ocn ) {
@@ -261,7 +286,7 @@ function populate_filelist_grades() {
     var filelist = document.getElementById('app_input_grades_filelist');
     var filelist_count = document.getElementById('app_input_grades_filelist_count');
     // Clear the list to keep it current.
-    filelist.children = [];
+    filelist.replaceChildren();
 
     // Then populate.
     if ( app.input_files_grades ) {
@@ -292,12 +317,40 @@ function populate_ocn_clips() {
     // Then work.
     app.ocn_clips.forEach( (ocn_clip) => {
         var row = tbody.insertRow(-1);
+        // OCN Clip Name
         var cell_source_file_name = row.insertCell(0);
-        cell_source_file_name.innerHTML = ocn_clip['_name'];
-        var cell_identifier = row.insertCell(1);
-        cell_identifier.innerHTML = ocn_clip['_duration'];
+        cell_source_file_name.textContent = ocn_clip['_name'];
+        // OCN Clip Duration
+        var cell_duration = row.insertCell(1);
+        var dur = new Timecode(ocn_clip['_duration'], ocn_clip['_fps']);
+        if ( dur.hours <= 0 ) {
+        	cell_duration.textContent = `${dur.minutes}m ${dur.seconds}s`;
+        }
+        else {
+            cell_duration.textContent = dur;
+        }
+
+        // OCN Clip Start TC
         var cell_start_tc = row.insertCell(-1);
-        cell_start_tc.innerHTML = ocn_clip['_starttc'];
+        cell_start_tc.textContent = ocn_clip['_starttc'];
+        var cell_matched_grade_identifier = row.insertCell(-1);
+        var cell_matched_grade_scene = row.insertCell(-1);
+        var cell_matched_grade_take = row.insertCell(-1);
+        var cell_matched_grade_sop = row.insertCell(-1);
+        var cell_matched_grade_sat = row.insertCell(-1);
+        // Matched grades
+        if ( ocn_clip['_matched_grades'].length > 0 ) {
+            var matched_grade = ocn_clip['_matched_grades'][0];
+            cell_matched_grade_identifier.textContent = matched_grade.identifier;
+            cell_matched_grade_scene.textContent = matched_grade.metadata.scene ?? '';
+            cell_matched_grade_take.textContent = matched_grade.metadata.take ?? '';
+            cell_matched_grade_sop.textContent = matched_grade.sop_as_string;
+            cell_matched_grade_sat.textContent = matched_grade.sat_as_string;
+        }
+        else {
+            cell_matched_grade_identifier.textContent = '';
+        }
+        
     });
 }
 function populate_grades() {
@@ -309,13 +362,17 @@ function populate_grades() {
     app.grades.forEach( (grade) => {
         var row = tbody.insertRow(-1);
         var cell_grade_name = row.insertCell(0);
-        cell_grade_name.innerHTML = grade.identifier;
-        var cell_identifier = row.insertCell(1);
-        cell_identifier.innerHTML = grade.identifier;
+        var cell_start_tc = row.insertCell(-1);
+        var cell_scene = row.insertCell(-1);
+        var cell_take = row.insertCell(-1);
         var cell_sop = row.insertCell(-1);
-        cell_sop.innerHTML = grade.sop_as_string;
         var cell_sat = row.insertCell(-1);
-        cell_sat.innerHTML = grade.sat_as_string;
+        cell_grade_name.textContent = grade.identifier;
+        cell_start_tc.textContent = grade.metadata.start_tc ?? '';
+        cell_scene.textContent = grade.metadata.scene ?? '';
+        cell_take.textContent = grade.metadata.take ?? '';
+        cell_sop.textContent = grade.sop_as_string;
+        cell_sat.textContent = grade.sat_as_string;
     });
 }
 
@@ -364,6 +421,9 @@ function event_clear_filelist_grades(e) {
     // Refresh display
     document.getElementById('app_input_grades_filelist').replaceChildren();
     document.getElementById('app_input_grades_filelist_count').innerHTML = '0 files';
+}
+function event_match_auto_match_grades(e) {
+    app.match_grades_to_ocn_auto();
 }
 function event_request_output_file_all(e) {
     var file_ext = e.target.dataset.outputFiletype;
@@ -418,6 +478,9 @@ app_input_grades_droparea.addEventListener('drop', event_read_files_dropped, fal
 app_input_grades_filepicker.addEventListener('change', event_read_files_selected, false);
 app_input_grades_filelist_clearall.addEventListener('click', event_clear_filelist_grades, false);
 
+// MATCH
+const app_match_btn_auto_match = document.getElementById('app_match_btn_auto_match');
+app_match_btn_auto_match.addEventListener('click', event_match_auto_match_grades, false);
 
 // EVENT HANDLERS
 // Prevent default drag behaviors
