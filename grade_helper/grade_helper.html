@@ -8,83 +8,68 @@
         
     	<div class="row g-0">
             <!-- INPUT OCN CLIPS -->
-            <div class="col-7 section input_ocn">
+            <div class="col section input_ocn">
                 <h3>Add clips</h3>
-                <div id="app_input_ocn_droparea" class="droparea w-50" data-contentType="ocn">
-                    <form>
-                        <label for="app_input_ocn_filepicker" class="form-label">Select a file, or drop on top here:</label>
-                        <input type="file" class="form-control" id="app_input_ocn_filepicker" data-contentType="ocn">
+                <div id="app_input_ocn_droparea" class="droparea w-50">
+                    <form data-contenttype="ocn">
+                        <label for="app_input_ocn_filepicker" class="form-label">
+                            <div>Select or drag & drop here.</div>
+                            <div>Accepted: <code>.ale</code></div>
+                        </label>
+                        <input type="file" class="form-control" id="app_input_ocn_filepicker" data-contenttype="ocn" multiple>
+                        <div class="alert alert-warning input_file_warning" role="alert" id="app_input_ocn_warning" style="display:none;"></div>
                     </form>
                 </div>
                 <div class="input_ocn_filelist my-2 w-75">
                     <ul class="list-group filelist_group" id="app_input_ocn_filelist">
-                        <li class="filelist_item">
-                        	<span class="filelist_item_name">A001R4DG_AVID.ale</span>
-                            <span class="filelist_item_eventnum">14</span>
-                        </li>
                     </ul>
                 </div>
                 <div class="filelist_toolbuttons">
-                    <div id="app_input_ocn_filelist_count" class="btn btn-outline-dark disabled">6 items</div>
-                    <div id="app_input_ocn_filelist_clearall" class="btn btn-outline-primary" data-contentType="ocn">Clear all</div>
+                    <div id="app_input_ocn_filelist_count" class="btn btn-outline-dark disabled">0 files</div>
+                    <div id="app_input_ocn_filelist_clearall" class="btn btn-outline-primary" data-contenttype="ocn">Clear all</div>
                 </div>
 
             </div>
 
             <!-- INPUT GRADES -->
-            <div class="col-5 section app_input_grades">
+            <div class="col section app_input_grades">
                 <h3>Add grades</h3>
-                <div id="app_input_grades_droparea" class="droparea w-50" data-contentType="grades">
-                    <form>
+                <div id="app_input_grades_droparea" class="droparea w-50">
+                    <form data-contenttype="grades">
                         <label for="app_input_grades_filepicker" class="form-label">Select a file, or drop on top here:</label>
-                        <input type="file" class="form-control" id="app_input_grades_filepicker" data-contentType="grades">
+                        <input type="file" class="form-control" id="app_input_grades_filepicker" data-contenttype="grades" multiple>
+                        <div class="alert alert-warning input_file_warning" role="alert" id="app_input_grades_warning" style="display:none;"></div>
                     </form>
                 </div>
                 <div class="filelist my-2 w-75">
                     <ul class="list-group" id="app_input_grades_filelist">
-                        <li class="list-group-item d-flex justify-content-between align-items-center" id="A001R4DG_AVID.ale">
-                            <span class="filelist_item_name">A001R4DG_AVID.ale</span>
-                            <span class="badge bg-primary rounded-pill">14</span>
-                        </li>
                     </ul>
                 </div>
                 <div class="filelist_toolbuttons">
                     <div id="app_input_grades_filelist_count" class="btn btn-outline-dark disabled">6 items</div>
-                    <div id="app_input_grades_filelist_clearall" class="btn btn-outline-primary" data-contentType="grades">Clear all</div>
+                    <div id="app_input_grades_filelist_clearall" class="btn btn-outline-primary" data-contenttype="grades">Clear all</div>
                 </div>
             </div>
         </div>
 
     	<div class="row g-0">
-            <div class="col-7 section clips_table">
+            <div class="col section clips_table">
                 <h3>Clips table</h3>
-                <table class="table" id="app_ocn_table">
+                <table class="table" id="app_ocn_clips_table">
                     <thead>
                         <tr>
-                            <th>Clip name</th>
-                            <th>SOP</th>
-                            <th>SAT</th>
+                            <th>Name</th>
+                            <th>Duration</th>
+                            <th>Start TC</th>
                             <th class="col-graded">Matched grade</th>
                         </tr>
                     </thead>
-                    <tbody id="app_ocn_tbody">
-                        <tr>
-                            <td>A001C001_240294_R4DG</td>
-                            <td>1.0000</td>
-                            <td>1.0000</td>
-                            <td class="col-graded">A001C001_24A-1.cdl</td>
-                        </tr>
-                        <tr>
-                            <td>A001C002_240294_R4DG</td>
-                            <td>1.0000</td>
-                            <td>1.0000</td>
-                            <td>A001C001_24A-1.cdl</td>
-                        </tr>
+                    <tbody id="app_ocn_clips_tbody">
                     </tbody>
                 </table>
             </div>
 
-            <div class="col-5 section grades_table">
+            <div class="col section grades_table">
                 <h3>Grades</h3>
                 <table class="table" id="app_grades_table">
                     <thead>
@@ -95,16 +80,6 @@
                         </tr>
                     </thead>
                     <tbody id="app_grades_tbody">
-                        <tr>
-                            <td class="col-graded">A001C001_24A-1.cdl</td>
-                            <td>1.0000</td>
-                            <td>1.0000</td>
-                        </tr>
-                        <tr>
-                            <td>A001C002_24A-2.cdl</td>
-                            <td>1.0000</td>
-                            <td>1.0000</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -127,7 +102,10 @@
         </div>
 
 
-
-
+    <script type="text/javascript" src="../lib/cdl.js"></script>
+    <script type="text/javascript" src="../lib/ale.js"></script>
+    <script type="text/javascript" src="../lib/timecode.js"></script>
+    <script type="text/javascript" src="../lib/papaparse.min.js"></script>
+    <script type="text/javascript" src="grade_helper.js"></script>
     </body>
 </html>

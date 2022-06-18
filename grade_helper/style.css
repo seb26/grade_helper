@@ -7,6 +7,8 @@
 .input_grades {
     background: #cfe2ff;
 }
+.input_file_warning {
+}
 
 .droparea {
     border: 1px solid grey;
