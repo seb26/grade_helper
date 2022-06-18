@@ -1,0 +1,23 @@
+<!-- CDL 1 -->
+				<Description></Description>
+				<Slope>1.09037 0.98100 0.92216</Slope>
+				<Offset>0.07335 0.00000 -0.05578</Offset>
+				<Power>0.91349 1.01696 1.08668</Power>
+<!-- CDL 2 -->
+				<Description></Description>
+				<Slope>0.96100 1.00439 1.07132</Slope>
+				<Offset>-0.01588 0.00770 -0.02954</Offset>
+				<Power>0.96739 1.01553 0.94217</Power>
+
+<!-- COMBINED BY LIVEGRADE SAVE -->
+				<Description>New Look 1 (modified)</Description>
+				<Slope>1.04785 0.98530 0.98793</Slope>
+				<Offset>0.05747 0.00770 -0.08532</Offset>
+				<Power>0.88370 1.03276 1.02384</Power>
+
+
+
+TO COMBINE
+Slope * Slope
+Offset + Offset
+Power * Power
