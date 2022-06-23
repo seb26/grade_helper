@@ -398,10 +398,11 @@ function output_ocn_clips_to_file(file_ext, add_blank_grades=false) {
         }
     });
     // Output data presets
-    function _export_ccc_cdl(grades, file_ext) {
+    function _export_ccc_cdl(grades, file_ext, use_ccc_identifier=false) {
         var output_data = cdllib.export(
             grades,
             file_ext,
+            use_ccc_identifier,
         );
         return {
             'file_ext': file_ext,
@@ -427,11 +428,9 @@ function output_ocn_clips_to_file(file_ext, add_blank_grades=false) {
                     paired_ccc_id =`cc${String(paired_ccc_index).padStart(5, '0')}`;
                     edl_clip.ASC_CC_XML = paired_ccc_id;
 
-                    var grade_with_paired_ccc = structuredClone(grade);
-                    console.log(grade_with_paired_ccc);
-                    grade_with_paired_ccc.set_identifier(paired_ccc_id);
+                    grade.set_ccc_identifier(paired_ccc_id);
                     // Save the grades with cc id separately
-                    grades_with_paired_ccc.push(grade_with_paired_ccc);
+                    grades_with_paired_ccc.push(grade);
                 }
                 edl.add_event_to_timeline_sequentially(edl_clip);
             });
@@ -466,7 +465,7 @@ function output_ocn_clips_to_file(file_ext, add_blank_grades=false) {
         var edl = _export_edl(paired_ccc=true);
         output_files.push( edl );
         if ( edl.grades ) {
-        	output_files.push( _export_ccc_cdl(edl.grades, 'ccc') );
+        	output_files.push( _export_ccc_cdl(edl.grades, 'ccc', use_ccc_identifier=true) );
         }
     }
     else if ( file_ext == 'edl' ) {
@@ -534,6 +533,7 @@ function event_request_output_file_all(e) {
             browser_output_file_as_download( file.data, 'your name here' + '.' + file.file_ext );
         }
     });
+    console.log('after output, here are the app items', app.ocn_clips);
 }
 
 // WARNINGS
