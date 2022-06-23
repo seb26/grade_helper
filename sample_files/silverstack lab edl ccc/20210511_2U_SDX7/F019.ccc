@@ -1,0 +1,66 @@
+<ColorCorrectionCollection xmlns="urn:ASC:CDL:v1.01">
+	<ColorCorrection id="cc00001">
+		<SOPNode>
+			<Slope>1.3698 1.2316 1.1256</Slope> <Offset>-0.1967 -0.1170 -0.0177</Offset> <Power>1.0073 0.9903 1.0747</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00002">
+		<SOPNode>
+			<Slope>1.3698 1.2316 1.1256</Slope> <Offset>-0.1967 -0.1170 -0.0177</Offset> <Power>1.0073 0.9903 1.0747</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00003">
+		<SOPNode>
+			<Slope>1.3698 1.2316 1.1256</Slope> <Offset>-0.1967 -0.1170 -0.0177</Offset> <Power>1.0073 0.9903 1.0747</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00004">
+		<SOPNode>
+			<Slope>1.3698 1.2316 1.1256</Slope> <Offset>-0.1967 -0.1170 -0.0177</Offset> <Power>1.0073 0.9903 1.0747</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00005">
+		<SOPNode>
+			<Slope>1.3698 1.2316 1.1256</Slope> <Offset>-0.1967 -0.1170 -0.0177</Offset> <Power>1.0073 0.9903 1.0747</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00006">
+		<SOPNode>
+			<Slope>1.3698 1.2316 1.1256</Slope> <Offset>-0.1967 -0.1170 -0.0177</Offset> <Power>1.0073 0.9903 1.0747</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00007">
+		<SOPNode>
+			<Slope>1.2495 1.1212 1.0283</Slope> <Offset>-0.1322 -0.0623 0.0238</Offset> <Power>1.0073 0.9903 1.0747</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00008">
+		<SOPNode>
+			<Slope>1.2495 1.1212 1.0283</Slope> <Offset>-0.1322 -0.0623 0.0238</Offset> <Power>1.0073 0.9903 1.0747</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+</ColorCorrectionCollection>

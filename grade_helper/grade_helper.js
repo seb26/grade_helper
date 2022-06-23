@@ -36,13 +36,13 @@ pseudocode logic
 
 // GLOBALS
 
-ALE_COL_NAMES_START_TIMECODE = [ 'Start', 'TC Start', 'StartTC', 'Start TC', ];
-ALE_COL_NAMES_END_TIMECODE = [ 'End', 'TC End', 'EndTC', 'End TC', ];
-ALE_COL_NAMES_DURATION = [ 'Duration', 'Clip Duration', ];
-ALE_COL_NAMES_FPS = [ 'FPS', 'Project FPS', 'Speed', ];
-ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', ]; /* In order of selection */
+const ALE_COL_NAMES_START_TIMECODE = [ 'Start', 'TC Start', 'StartTC', 'Start TC', ];
+const ALE_COL_NAMES_END_TIMECODE = [ 'End', 'TC End', 'EndTC', 'End TC', ];
+const ALE_COL_NAMES_DURATION = [ 'Duration', 'Clip Duration', ];
+const ALE_COL_NAMES_FPS = [ 'FPS', 'Project FPS', 'Speed', ];
+const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', ]; /* In order of selection */
 
-DEFAULT_FPS_UNSPECIFIED = 25;
+const DEFAULT_FPS_UNSPECIFIED = 25;
 
 class App {
 
@@ -76,7 +76,7 @@ class App {
         parsed_items.forEach( (item) => {
             count += 1;
             // Save a space for matched grades
-            item['_matched_grades'] = [];
+            item['matched_grades'] = [];
         	// Gather common metadata per clip for easy access within this app
         	// Name
             ALE_COL_NAMES_CLIPNAME.some( (name_field) => {
@@ -148,7 +148,6 @@ class App {
             'eventcount': count,
         };
         populate_filelist_ocn();
-        
     }
     input_file_grades(filetype, file_data, filename) {
 		var fileext = filetype.toLowerCase();
@@ -205,8 +204,10 @@ class App {
                     // If grade TC takes place *during* clip recording start/end
                     if ( ( grade_start_f >= ocn_clip_start_f ) && ( ocn_clip_end_f >= grade_start_f ) ) {
                         // Found a match!
-                        ocn_clip._matched_grades.push(grade);
-                    	// console.log(ocn_clip._name, ocn_clip_start_f, ocn_clip_end_f, grade.identifier, grade_start_f);
+                        // Update its identifier
+                        grade.set_identifier(ocn_clip._name);
+                        // Save it to the clip.
+                        ocn_clip.matched_grades.push(grade);
                     }
                 }
                 else {
@@ -220,7 +221,7 @@ class App {
     }
 }
 
-// FILE HANDLING
+// BROWSER FILE HANDLING
 function read_file_to_string(input_function, file, filename, callback) {
     var filelist;
     let reader = new FileReader();
@@ -231,14 +232,12 @@ function read_file_to_string(input_function, file, filename, callback) {
         callback();
     }
 }
-
 function read_files_multiple(input_function, files, callback) {
     for ( var i = 0; i < files.length; i++ ) {
         read_file_to_string(input_function, files[i], files[i].name, callback);
     }
 }
-
-function output_file_as_download(data, filename) {
+function browser_output_file_as_download(data, filename) {
     // Invisible link
     var download = document.createElement('a');
     download.setAttribute(
@@ -247,7 +246,6 @@ function output_file_as_download(data, filename) {
     );
     download.setAttribute('download', filename);
     download.style.display = 'none';
-
     // Commence download
     document.body.appendChild(download);
     download.click();
@@ -339,8 +337,8 @@ function populate_ocn_clips() {
         var cell_matched_grade_sop = row.insertCell(-1);
         var cell_matched_grade_sat = row.insertCell(-1);
         // Matched grades
-        if ( ocn_clip['_matched_grades'].length > 0 ) {
-            var matched_grade = ocn_clip['_matched_grades'][0];
+        if ( ocn_clip['matched_grades'].length > 0 ) {
+            var matched_grade = ocn_clip['matched_grades'][0];
             cell_matched_grade_identifier.textContent = matched_grade.identifier;
             cell_matched_grade_scene.textContent = matched_grade.metadata.scene ?? '';
             cell_matched_grade_take.textContent = matched_grade.metadata.take ?? '';
@@ -350,7 +348,6 @@ function populate_ocn_clips() {
         else {
             cell_matched_grade_identifier.textContent = '';
         }
-        
     });
 }
 function populate_grades() {
@@ -374,6 +371,109 @@ function populate_grades() {
         cell_sop.textContent = grade.sop_as_string;
         cell_sat.textContent = grade.sat_as_string;
     });
+}
+// LIST OUTPUT
+function output_ocn_clips_to_file(file_ext, add_blank_grades=false) {
+    
+    var output_clips = [];
+    var output_grades = [];
+    var output_files = [];
+    app.ocn_clips.forEach( (ocn_clip) => {
+        if ( add_blank_grades ) {
+            // Attach a blank unity grade to clips with no matching grade.
+        	var grade = new ColorCorrection(
+                false,
+                'blank_unity_grade',
+                '(1.000000 1.000000 1.000000)(0.000000 0.000000 0.000000)(1.000000 1.000000 1.000000)',
+            );
+            grade.set_identifier(ocn_clip._name);
+            ocn_clip.matched_grades.push(grade);
+        }
+        // Save
+        output_clips.push(ocn_clip);
+        // Gather the grades in a separate list, to be used by CCC export
+        // which doesn't require any knowledge of ocn clips
+        if ( ocn_clip.matched_grades.length > 0 ) {
+        	output_grades.push(ocn_clip.matched_grades[0]); // Only the first grade if multiple.
+        }
+    });
+    // Output data presets
+    function _export_ccc_cdl(grades, file_ext) {
+        var output_data = cdllib.export(
+            grades,
+            file_ext,
+        );
+        return {
+            'file_ext': file_ext,
+            'data': output_data,
+        };
+    }
+    function _export_edl(paired_ccc=false) {
+        var edl = new EDL;
+        var paired_ccc_index = 0;
+        var grades_with_paired_ccc = [];
+        if ( paired_ccc ) {
+            // Then the grades need to take on a unique "cc00001" ID and the EDL reference that
+            output_clips.forEach( (clip) => {
+                var edl_clip = new Clip(
+                    clip._name,
+                    clip._starttc,
+                    clip._endtc,
+                    clip._fps,
+                );
+                if ( clip.matched_grades.length > 0 ) {
+                    var grade = clip.matched_grades[0];
+                    paired_ccc_index += 1;
+                    paired_ccc_id =`cc${String(paired_ccc_index).padStart(5, '0')}`;
+                    edl_clip.ASC_CC_XML = paired_ccc_id;
+
+                    var grade_with_paired_ccc = structuredClone(grade);
+                    console.log(grade_with_paired_ccc);
+                    grade_with_paired_ccc.set_identifier(paired_ccc_id);
+                    // Save the grades with cc id separately
+                    grades_with_paired_ccc.push(grade_with_paired_ccc);
+                }
+                edl.add_event_to_timeline_sequentially(edl_clip);
+            });
+        }
+    	else {
+            output_clips.forEach( (clip) => {
+                var edl_clip = new Clip(
+                    clip._name,
+                    clip._starttc,
+                    clip._endtc,
+                    clip._fps,
+                );
+                if ( clip.matched_grades.length > 0 ) {
+                    var grade = clip.matched_grades[0];
+                    edl_clip.ASC_SOP = grade.sop_as_string;
+                    edl_clip.ASC_SAT = grade.sat_as_string;
+                }
+                edl.add_event_to_timeline_sequentially(edl_clip);
+	        });
+        }
+        return {
+            'file_ext': 'edl',
+            'data': edl.export(),
+            'grades': grades_with_paired_ccc ?? undefined,
+        };
+    }
+    // Collect output files
+    if ( file_ext == 'ccc' || file_ext == 'cdl' ) {
+        output_files.push( _export_ccc_cdl(output_grades, file_ext) );
+    }
+    else if ( file_ext == 'edl+ccc' ) {
+        var edl = _export_edl(paired_ccc=true);
+        output_files.push( edl );
+        if ( edl.grades ) {
+        	output_files.push( _export_ccc_cdl(edl.grades, 'ccc') );
+        }
+    }
+    else if ( file_ext == 'edl' ) {
+        output_files.push( _export_edl() );
+    }
+    console.log(output_files);
+    return output_files;
 }
 
 
@@ -426,12 +526,14 @@ function event_match_auto_match_grades(e) {
     app.match_grades_to_ocn_auto();
 }
 function event_request_output_file_all(e) {
-    var file_ext = e.target.dataset.outputFiletype;
-    var output_data = cdllib.export(
-        app.color_items,
-        file_ext
-    );
-    output_file_as_download( output_data, 'your name here' + '.' + file_ext );
+    var file_ext = e.target.dataset.outputfiletype;
+    var output_files = output_ocn_clips_to_file(file_ext);
+    output_files.forEach( (file) => {
+        if ( file.data ) {
+            var timestamp = Date.now();
+            browser_output_file_as_download( file.data, 'your name here' + '.' + file.file_ext );
+        }
+    });
 }
 
 // WARNINGS
@@ -481,6 +583,12 @@ app_input_grades_filelist_clearall.addEventListener('click', event_clear_filelis
 // MATCH
 const app_match_btn_auto_match = document.getElementById('app_match_btn_auto_match');
 app_match_btn_auto_match.addEventListener('click', event_match_auto_match_grades, false);
+
+// OUTPUTS
+const app_output_btn_ocn_clips = document.getElementsByClassName('app_output_btn_ocn_clips');
+for ( var i = 0; app_output_btn_ocn_clips.length > i; i++ ) {
+    app_output_btn_ocn_clips[i].addEventListener('click', event_request_output_file_all, false);
+}
 
 // EVENT HANDLERS
 // Prevent default drag behaviors

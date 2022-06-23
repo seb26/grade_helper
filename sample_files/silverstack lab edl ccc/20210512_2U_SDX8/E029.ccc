@@ -1,0 +1,58 @@
+<ColorCorrectionCollection xmlns="urn:ASC:CDL:v1.01">
+	<ColorCorrection id="cc00001">
+		<SOPNode>
+			<Slope>1.0000 1.0000 1.0000</Slope> <Offset>0.0000 0.0000 0.0000</Offset> <Power>1.0000 1.0000 1.0000</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00002">
+		<SOPNode>
+			<Slope>1.0000 1.0000 1.0000</Slope> <Offset>0.0000 0.0000 0.0000</Offset> <Power>1.0000 1.0000 1.0000</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00003">
+		<SOPNode>
+			<Slope>1.0000 1.0000 1.0000</Slope> <Offset>0.0000 0.0000 0.0000</Offset> <Power>1.0000 1.0000 1.0000</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00004">
+		<SOPNode>
+			<Slope>1.0000 1.0000 1.0000</Slope> <Offset>0.0000 0.0000 0.0000</Offset> <Power>1.0000 1.0000 1.0000</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00005">
+		<SOPNode>
+			<Slope>1.0000 1.0000 1.0000</Slope> <Offset>0.0000 0.0000 0.0000</Offset> <Power>1.0000 1.0000 1.0000</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00006">
+		<SOPNode>
+			<Slope>1.0000 1.0000 1.0000</Slope> <Offset>0.0000 0.0000 0.0000</Offset> <Power>1.0000 1.0000 1.0000</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+	<ColorCorrection id="cc00007">
+		<SOPNode>
+			<Slope>1.0000 1.0000 1.0000</Slope> <Offset>0.0000 0.0000 0.0000</Offset> <Power>1.0000 1.0000 1.0000</Power>
+		</SOPNode>
+		<SatNode>
+			<Saturation>1.0000</Saturation>
+		</SatNode>
+	</ColorCorrection>
+</ColorCorrectionCollection>

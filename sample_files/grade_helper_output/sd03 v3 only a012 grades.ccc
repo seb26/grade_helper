@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ColorCorrectionCollection xmlns="urn:ASC:CDL:v1.2">
+	<ColorCorrection id="A012C002_220609_R111">
+		<SOPNode>
+			<Slope>0.920200 0.920200 0.920200</Slope>
+			<Offset>0.011800 -0.001800 -0.016700</Offset>
+			<Power>0.915100 0.915100 0.915100</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="A012C003_220609_R111">
+		<SOPNode>
+			<Slope>0.797100 0.797100 0.797100</Slope>
+			<Offset>0.011800 -0.001800 -0.016700</Offset>
+			<Power>0.915100 0.915100 0.915100</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="A012C005_220609_R111">
+		<SOPNode>
+			<Slope>0.837700 0.837700 0.837700</Slope>
+			<Offset>-0.006600 -0.020100 -0.035000</Offset>
+			<Power>0.913800 0.913800 0.913800</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+	<ColorCorrection id="A012C006_220609_R111">
+		<SOPNode>
+			<Slope>0.837700 0.837700 0.837700</Slope>
+			<Offset>-0.006600 -0.020100 -0.035000</Offset>
+			<Power>0.914900 0.914100 0.907700</Power>
+		</SOPNode>
+		<SATNode>
+			<Saturation>1.000000</Saturation>
+		</SATNode>
+	</ColorCorrection>
+</ColorCorrectionCollection>
