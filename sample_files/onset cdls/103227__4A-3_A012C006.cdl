@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ColorDecisionList xmlns="urn:ASC:CDL:v1.01">
+	<ColorDecision>
+		<ColorCorrection>
+			<SOPNode>
+				<Description>emb_seb_v1_xx (modified) 4 (modified)</Description>
+				<Slope>0.83774 0.83774 0.83774</Slope>
+				<Offset>-0.00657 -0.02014 -0.03500</Offset>
+				<Power>0.91490 0.91413 0.90772</Power>
+			</SOPNode>
+			<SATNode>
+				<Saturation>1.00000</Saturation>
+			</SATNode>
+		</ColorCorrection>
+	</ColorDecision>
+</ColorDecisionList>

@@ -54,6 +54,9 @@ class App {
     }
     input_file_ocn(filetype, file_data, filename) {
         var fileext = filetype.toLowerCase();
+        // Unique ID
+        var id = Symbol();
+        // Parse content
         var parsed_items;
         if ( fileext == 'ale' ) {
             // Build clip objects
@@ -138,6 +141,8 @@ class App {
             if ( !( item['_starttc'] && item['_endtc'] && item['_duration'] && item['_fps'] ) ) {
                 return;
             }
+            // Attach ID
+            item.input_file = id;
             // Otherwise save our progress.
             this.ocn_clips.push(item);
         });
@@ -151,6 +156,9 @@ class App {
     }
     input_file_grades(filetype, file_data, filename) {
 		var fileext = filetype.toLowerCase();
+        // Unique ID
+        var id = Symbol();
+        // Parse content
         var parsed_items;
         if ( fileext == 'ccc' || fileext == 'cdl' ) {
             parsed_items = cdllib.parse_xml(file_data, filename);
@@ -168,13 +176,14 @@ class App {
         }
         var count = 0;
         parsed_items.forEach( (item) => {
+            item.input_file = id;
             this.grades.push(item);
             count += 1;
         });
-
         // Update the list of inputted files
         this.input_files_grades[filename] = {
             'filetype': fileext,
+            'id': id,
             'data': file_data,
             'eventcount': count,
         };
@@ -184,7 +193,7 @@ class App {
         this.ocn_clips.forEach( (ocn_clip) => {
 
             this.grades.forEach( (grade) => {
-                // 1. Match by timecode
+                // 1. MATCH BY TIMECODE
                 // First establish FPS
                 var fps;
                 if ( grade.fps ) {
@@ -205,13 +214,32 @@ class App {
                     if ( ( grade_start_f >= ocn_clip_start_f ) && ( ocn_clip_end_f >= grade_start_f ) ) {
                         // Found a match!
                         // Update its identifier
-                        grade.set_identifier(ocn_clip._name);
                         // Save it to the clip.
                         ocn_clip.matched_grades.push(grade);
                     }
                 }
                 else {
-                    // Cannot match by timecode
+                    // 2. MATCH BY CLIP IDENTIFIER SIMILARITY
+                    const pattern_clipidentifier = /([a-zA-Z][a-zA-Z]?\d{3,4}_?[a-zA-Z][a-zA-Z]?\d{3})/g;
+                    var ocn_clip_name_match = ocn_clip._name.match(
+                        pattern_clipidentifier
+                    );
+                    var grade_clip_name_match = grade.identifier.match(
+                        pattern_clipidentifier
+                    );
+                    if ( ( ocn_clip_name_match && grade_clip_name_match ) ) {
+                        if ( ocn_clip_name_match[0] == grade_clip_name_match[0] ) {
+                            // OCN clipidentifier matches the grade clip identifier
+                            // e.g. A001C001
+                            // Found a match!
+                            // Update its identifier
+                            // Save it to the clip.
+                            ocn_clip.matched_grades.push(grade);
+                        }
+                    }
+                    else {
+                        // No match.
+                    }
                 }
                 
             });
@@ -219,6 +247,64 @@ class App {
         });
         populate_ocn_clips();
     }
+    export_ccc_cdl(grades, file_ext, use_ccc_identifier=false) {
+        var output_data = cdllib.export(
+            grades,
+            file_ext,
+            use_ccc_identifier,
+        );
+        return {
+            'file_ext': file_ext,
+            'data': output_data,
+        };
+    }
+    export_edl(clips, paired_ccc=false) {
+        var edl = new EDL;
+        var paired_ccc_index = 0;
+        var grades_with_paired_ccc = [];
+        if ( paired_ccc ) {
+            // Then the grades need to take on a unique "cc00001" ID and the EDL reference that
+            clips.forEach( (clip) => {
+                var edl_clip = new Clip(
+                    clip._name,
+                    clip._starttc,
+                    clip._endtc,
+                    clip._fps,
+                );
+                if ( clip.matched_grades.length > 0 ) {
+                    var grade = clip.matched_grades[0];
+                    paired_ccc_index += 1;
+                    var paired_ccc_id =`cc${String(paired_ccc_index).padStart(5, '0')}`;
+                    edl_clip.ASC_CC_XML = paired_ccc_id;
+                    grade.set_ccc_identifier(paired_ccc_id);
+                    // Save the grades with cc id separately
+                    grades_with_paired_ccc.push(grade);
+                }
+                edl.add_event_to_timeline_sequentially(edl_clip);
+            });
+        }
+        else {
+            clips.forEach( (clip) => {
+                var edl_clip = new Clip(
+                    clip._name,
+                    clip._starttc,
+                    clip._endtc,
+                    clip._fps,
+                );
+                if ( clip.matched_grades.length > 0 ) {
+                    var grade = clip.matched_grades[0];
+                    edl_clip.ASC_SOP = grade.sop_as_string;
+                    edl_clip.ASC_SAT = grade.sat_as_string;
+                }
+                edl.add_event_to_timeline_sequentially(edl_clip);
+            });
+        }
+        return {
+            'file_ext': 'edl',
+            'data': edl.export(),
+            'grades': grades_with_paired_ccc ?? undefined,
+        };
+    } 
 }
 
 // BROWSER FILE HANDLING
@@ -274,7 +360,6 @@ function populate_filelist_ocn() {
             li.appendChild( name );
             li.appendChild( eventcount );
             filelist.appendChild( li );
-
             count += 1;
         };
         document.getElementById('app_input_ocn_filelist_count').innerHTML = count + ' file(s)';
@@ -301,7 +386,6 @@ function populate_filelist_grades() {
             li.appendChild( name );
             li.appendChild( eventcount );
             filelist.appendChild( li );
-
             count += 1;
         };
         document.getElementById('app_input_grades_filelist_count').innerHTML = count + ' file(s)';
@@ -373,105 +457,63 @@ function populate_grades() {
     });
 }
 // LIST OUTPUT
-function output_ocn_clips_to_file(file_ext, add_blank_grades=false) {
-    
+function output_ocn_clips_to_file(file_type) {
     var output_clips = [];
     var output_grades = [];
     var output_files = [];
     app.ocn_clips.forEach( (ocn_clip) => {
-        if ( add_blank_grades ) {
-            // Attach a blank unity grade to clips with no matching grade.
-        	var grade = new ColorCorrection(
-                false,
-                'blank_unity_grade',
-                '(1.000000 1.000000 1.000000)(0.000000 0.000000 0.000000)(1.000000 1.000000 1.000000)',
-            );
-            grade.set_identifier(ocn_clip._name);
-            ocn_clip.matched_grades.push(grade);
-        }
         // Save
         output_clips.push(ocn_clip);
         // Gather the grades in a separate list, to be used by CCC export
         // which doesn't require any knowledge of ocn clips
         if ( ocn_clip.matched_grades.length > 0 ) {
-        	output_grades.push(ocn_clip.matched_grades[0]); // Only the first grade if multiple.
+            // Only the first grade if multiple.
+            var grade = ocn_clip.matched_grades[0]; 
+            // Assign the matched OCN clip name as the identifier for export.
+            grade.set_export_identifier(ocn_clip._name);
+        	output_grades.push(grade);
         }
     });
-    // Output data presets
-    function _export_ccc_cdl(grades, file_ext, use_ccc_identifier=false) {
-        var output_data = cdllib.export(
-            grades,
-            file_ext,
-            use_ccc_identifier,
-        );
-        return {
-            'file_ext': file_ext,
-            'data': output_data,
-        };
+    if ( file_type == 'ccc' ) {
+        output_files.push( app.export_ccc_cdl(output_grades, 'ccc') );
     }
-    function _export_edl(paired_ccc=false) {
-        var edl = new EDL;
-        var paired_ccc_index = 0;
-        var grades_with_paired_ccc = [];
-        if ( paired_ccc ) {
-            // Then the grades need to take on a unique "cc00001" ID and the EDL reference that
-            output_clips.forEach( (clip) => {
-                var edl_clip = new Clip(
-                    clip._name,
-                    clip._starttc,
-                    clip._endtc,
-                    clip._fps,
-                );
-                if ( clip.matched_grades.length > 0 ) {
-                    var grade = clip.matched_grades[0];
-                    paired_ccc_index += 1;
-                    paired_ccc_id =`cc${String(paired_ccc_index).padStart(5, '0')}`;
-                    edl_clip.ASC_CC_XML = paired_ccc_id;
-
-                    grade.set_ccc_identifier(paired_ccc_id);
-                    // Save the grades with cc id separately
-                    grades_with_paired_ccc.push(grade);
-                }
-                edl.add_event_to_timeline_sequentially(edl_clip);
-            });
-        }
-    	else {
-            output_clips.forEach( (clip) => {
-                var edl_clip = new Clip(
-                    clip._name,
-                    clip._starttc,
-                    clip._endtc,
-                    clip._fps,
-                );
-                if ( clip.matched_grades.length > 0 ) {
-                    var grade = clip.matched_grades[0];
-                    edl_clip.ASC_SOP = grade.sop_as_string;
-                    edl_clip.ASC_SAT = grade.sat_as_string;
-                }
-                edl.add_event_to_timeline_sequentially(edl_clip);
-	        });
-        }
-        return {
-            'file_ext': 'edl',
-            'data': edl.export(),
-            'grades': grades_with_paired_ccc ?? undefined,
-        };
+    else if ( file_type == 'cdl-single' ) {
+        // Output all grades into a single ColorDecisionList with multiple Corrections
+        output_files.push( app.export_ccc_cdl(output_grades, 'cdl') );
     }
-    // Collect output files
-    if ( file_ext == 'ccc' || file_ext == 'cdl' ) {
-        output_files.push( _export_ccc_cdl(output_grades, file_ext) );
+    else if ( file_type == 'cdl-multiple' ) {
+        // Output grades into one ColorDecisionList per ColorCorrection
+        output_grades.forEach( (grade) => {
+            output_files.push( app.export_ccc_cdl([ grade ], 'cdl') );
+        });
     }
-    else if ( file_ext == 'edl+ccc' ) {
-        var edl = _export_edl(paired_ccc=true);
+    else if ( file_type == 'edl+ccc' ) {
+        var edl = app.export_edl(output_clips, paired_ccc=true);
         output_files.push( edl );
         if ( edl.grades ) {
-        	output_files.push( _export_ccc_cdl(edl.grades, 'ccc', use_ccc_identifier=true) );
+        	output_files.push( app.export_ccc_cdl(edl.grades, 'ccc', use_ccc_identifier=true) );
         }
     }
-    else if ( file_ext == 'edl' ) {
-        output_files.push( _export_edl() );
+    else if ( file_type == 'edl' ) {
+        output_files.push( app.export_edl(output_clips) );
     }
-    console.log(output_files);
+    return output_files;
+}
+function output_grades_to_file(file_type) {
+    var output_files = [];
+    if ( file_type == 'ccc' ) {
+        output_files.push( app.export_ccc_cdl(app.grades, 'ccc') );
+    }
+    else if ( file_type == 'cdl-single' ) {
+        // Output all grades into a single ColorDecisionList with multiple Corrections
+        output_files.push( app.export_ccc_cdl(app.grades, 'cdl') );
+    }
+    else if ( file_type == 'cdl-multiple' ) {
+        // Output grades into one ColorDecisionList per ColorCorrection
+        app.grades.forEach( (grade) => {
+            output_files.push( app.export_ccc_cdl([ grade ], 'cdl') );
+        });
+    }
     return output_files;
 }
 
@@ -525,15 +567,21 @@ function event_match_auto_match_grades(e) {
     app.match_grades_to_ocn_auto();
 }
 function event_request_output_file_all(e) {
-    var file_ext = e.target.dataset.outputfiletype;
-    var output_files = output_ocn_clips_to_file(file_ext);
+    var file_type = e.target.dataset.outputfiletype;
+    var input_type = e.target.dataset.inputtype;
+    if ( input_type == 'clips' ) {
+        var output_files = output_ocn_clips_to_file(file_type);
+    }
+    else if ( input_type == 'grades' ) {
+        var output_files = output_grades_to_file(file_type);
+    }
+    console.log('Output files:', output_files);
     output_files.forEach( (file) => {
         if ( file.data ) {
             var timestamp = Date.now();
             browser_output_file_as_download( file.data, 'your name here' + '.' + file.file_ext );
         }
     });
-    console.log('after output, here are the app items', app.ocn_clips);
 }
 
 // WARNINGS

@@ -99,16 +99,28 @@
 
         <div class="row g-0">
             <div class="col section export">
-            	<h3>Export</h3>	
-                <div class="row w-50">
-                    <div class="col d-flex export-buttons">
-                    	<div class="btn btn-outline-primary me-2">ALE</div>
-                    	<div class="btn btn-outline-primary me-2">CSV</div>
+            	<h3>Export from clips</h3>
+                    <div class="row">
+                        <div class="col d-flex export-buttons">
+                        	<div class="btn btn-outline-primary me-2">ALE</div>
+                        	<div class="btn btn-outline-primary me-2">CSV</div>
+                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="edl">EDL</div>
+                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="edl+ccc">Paired EDL+CCC</div>
+                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="ccc">CCC</div>
+                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="cdl-multiple">CDLs</div>
+                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="cdl-single">CDL (single)</div>
+                        </div>
                     </div>
+            </div>
+            <div class="col section export">
+                <h3>Export grades</h3>
+                <div class="row">
                     <div class="col d-flex export-buttons">
-                    	<div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-outputfiletype="edl">EDL</div>
-                    	<div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-outputfiletype="ccc">CCC</div>
-                    	<div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-outputfiletype="edl+ccc">Paired EDL+CCC</div>
+                        <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="ccc">CCC</div>
+                        <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="cdl-multiple">CDLs</div>
+                        <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="cdl-single">CDL (single)</div>
+                        <div class="btn btn-outline-secondary me-2">ALE</div>
+                        <div class="btn btn-outline-secondary me-2">CSV</div>
                     </div>
                 </div>
             </div>
