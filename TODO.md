@@ -14,3 +14,6 @@
 
 * Output files as ALE -- requires ALE writer
 * Output files as CSV -- requires CSV writer
+
+* Output multiple files as zip (especially 20x CDL files).
+* Add field for custom name label - or date & time.
