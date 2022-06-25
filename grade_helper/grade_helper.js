@@ -36,13 +36,36 @@ pseudocode logic
 
 // GLOBALS
 
+const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', ]; /* In order of selection */
 const ALE_COL_NAMES_START_TIMECODE = [ 'Start', 'TC Start', 'StartTC', 'Start TC', ];
 const ALE_COL_NAMES_END_TIMECODE = [ 'End', 'TC End', 'EndTC', 'End TC', ];
-const ALE_COL_NAMES_DURATION = [ 'Duration', 'Clip Duration', ];
 const ALE_COL_NAMES_FPS = [ 'FPS', 'Project FPS', 'Speed', ];
-const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', ]; /* In order of selection */
+const ALE_COL_NAMES_DURATION = [ 'Duration', 'Clip Duration', ];
 
 const DEFAULT_FPS_UNSPECIFIED = 25;
+
+class Clip {
+    constructor(clip_attribs = {
+        name: undefined,
+        start_tc: undefined,
+        end_tc: undefined,
+        fps: undefined,
+        duration: undefined,
+    }) {
+        // Map attributes to the clip
+        for ( const [attr, value] of Object.entries( clip_attribs ) ) {
+            this[attr] = value;
+        }
+        // Calculate duration if start & end TC are defined
+        if ( ( !this.duration ) && ( this.start_tc && this.end_tc && this.fps ) ) {
+            let fps = parseInt(this.fps);
+            let start_tc = new Timecode(this.start_tc, fps );
+            let end_tc = new Timecode(this.end_tc, fps );
+            let duration = end_tc.subtract(start_tc);
+            this.duration = duration;
+        }
+    }
+}
 
 class App {
 
@@ -53,102 +76,74 @@ class App {
         this.grades = [];
     }
     input_file_ocn(filetype, file_data, filename) {
-        var fileext = filetype.toLowerCase();
-        // Unique ID
-        var id = Symbol();
+        var file_ext = filetype.toLowerCase();
+        var file_id = Symbol();
         // Parse content
-        var parsed_items;
-        if ( fileext == 'ale' ) {
-            // Build clip objects
+        var parsed_rows;
+        if ( file_ext == 'ale' ) {
             var ale = alelib.parse_ale(file_data, filename);
-            parsed_items = ale.items;
+            parsed_rows = ale.items;
         }
-        else if ( fileext == 'csv' ) {
+        else if ( file_ext == 'csv' ) {
             var csv = Papa.parse(file_data, {
                 header: true,
                 skipEmptyLines: true,
             });
-            parsed_items = csv.data;
+            parsed_rows = csv.data;
         }
         else {
             user_input_warning_trigger('app_input_ocn_warning', 'Only accepts files: .ale');
             event_clear_filelist_ocn();
             return;
         }
-        var count = 0;
-        parsed_items.forEach( (item) => {
-            count += 1;
-            // Save a space for matched grades
-            item['matched_grades'] = [];
-        	// Gather common metadata per clip for easy access within this app
-        	// Name
-            ALE_COL_NAMES_CLIPNAME.some( (name_field) => {
-                if ( name_field in item ) {
-                    item['_name'] = item[name_field];
-                    return true;
-                }
-                // Else
-                item['_name'] = '';
-            });
-            // Start TC
-            ALE_COL_NAMES_START_TIMECODE.some( (name_field) => {
-                if ( name_field in item ) {
-                    item['_starttc'] = item[name_field];
-                    return true;
-                }
-                // Else
-                item['_starttc'] = '';
-            });
-            // End TC
-            ALE_COL_NAMES_END_TIMECODE.some( (name_field) => {
-                if ( name_field in item ) {
-                    item['_endtc'] = item[name_field];
-                    return true;
-                }
-                // Else
-                item['_endtc'] = '';
-            });
-            // FPS 
-            ALE_COL_NAMES_FPS.some( (name_field) => {
-                if ( name_field in item ) {
-                    item['_fps'] = item[name_field];
-                    return true;
-                }
-                // Else
-                item['_fps'] = '';
-            });
-            // Duration
-            ALE_COL_NAMES_DURATION.some( (name_field) => {
-                if ( name_field in item ) {
-                    item['_duration'] = item[name_field];
-                    return true;
-                }
-                // Else
-                item['_duration'] = '';
-                // Calculate duration if start & end TC are defined
-                if ( !item['_duration'] ) {
-                    if ( item['_starttc'] && item['_endtc'] && item['_fps'] ) {
-                        let fps = parseInt(item['_fps']);
-                        let start_tc = new Timecode(item['_starttc'], fps );
-                        let end_tc = new Timecode(item['_endtc'], fps );
-                        let duration = end_tc.subtract(start_tc);
-                        item['_duration'] = duration;
+        function get_clip_attributes_from_entry(entry) {
+            var rough_clip = {};
+            const map_columns_to_values = {
+                name: ALE_COL_NAMES_CLIPNAME,
+                start_tc: ALE_COL_NAMES_START_TIMECODE,
+                end_tc: ALE_COL_NAMES_END_TIMECODE,
+                fps: ALE_COL_NAMES_FPS,
+                duration: ALE_COL_NAMES_DURATION,
+            };
+            // Search
+            for ( const [attr, colnames] of Object.entries( map_columns_to_values ) ) {
+                for ( let colname in colnames ) {
+                    if ( entry.hasOwnProperty(colname) ) {
+                        if ( entry[colname] ) {
+                        	rough_clip[attr] = entry[colname];
+                        }
+                        else {
+                            rough_clip[attr] = '';
+                        }
+                    }
+                    else {
+                        rough_clip[attr] = '';
                     }
                 }
-            });
-            // If for some reason this item has no Start TC, End TC, FPS, Duration
-            // Then it is not truly a clip. Remove it.
-            if ( !( item['_starttc'] && item['_endtc'] && item['_duration'] && item['_fps'] ) ) {
+            }
+            return rough_clip;
+        }
+        var count = 0;
+        parsed_rows.forEach( (entry) => {
+            var clip_rough = get_clip_attributes_from_entry(entry);
+        	// If for some reason this item has no Name, Start TC, End TC, FPS,
+            // Then it is not truly a clip.
+            if ( !( clip_rough.name && clip_rough.start_tc && clip_rough.end_tc && clip_rough.fps ) ) {
+                // TODO: Debug console log here: index and clip name or first column 
                 return;
             }
+            var clip_obj = new Clip(clip_rough);
+            console.log(clip_obj);
+            count += 1;
             // Attach ID
-            item.input_file = id;
+            clip_obj.input_file_id = file_id;
             // Otherwise save our progress.
-            this.ocn_clips.push(item);
+            this.ocn_clips.push(clip_obj);
         });
         // Update the list of inputted files
         this.input_files_ocn[filename] = {
-            'filetype': fileext,
+            'id': file_id,
+            'filetype': file_ext,
             'data': file_data,
             'eventcount': count,
         };
@@ -198,8 +193,8 @@ class App {
                 if ( grade.fps ) {
                     fps = grade.fps;
                 }
-                else if ( ocn_clip._fps ) {
-                    fps = ocn_clip._fps;
+                else if ( ocn_clip.fps ) {
+                    fps = ocn_clip.fps;
                 }
                 else {
                     fps = DEFAULT_FPS_UNSPECIFIED;
@@ -207,10 +202,10 @@ class App {
                 var match_found = false;
                 while ( !match_found ) {
                     // 1. MATCH BY TIMECODE
-                    if ( grade.metadata.start_tc && ocn_clip._starttc && ocn_clip._endtc ) {
+                    if ( grade.metadata.start_tc && ocn_clip.start_tc && ocn_clip.end_tc ) {
                         // Gather start & finish times
-                        var ocn_clip_start_f = new Timecode(ocn_clip._starttc, fps).frameCount();
-                        var ocn_clip_end_f = new Timecode(ocn_clip._endtc, fps).frameCount();
+                        var ocn_clip_start_f = new Timecode(ocn_clip.start_tc, fps).frameCount();
+                        var ocn_clip_end_f = new Timecode(ocn_clip.end_tc, fps).frameCount();
                         var grade_start_f = new Timecode(grade.metadata.start_tc, fps).frameCount();
                         if ( grade.metadata.end_tc ) {
                             var grade_end_f = new Timecode(grade.metadata.end_tc, fps).frameCount();
@@ -240,7 +235,7 @@ class App {
                         /([a-zA-Z]\d{3,4}_?(\d{8}\_)?[a-zA-Z]?\d{3})/g, // BLACKMAGIC
                     ];
                     patterns_clipidentifier.forEach( ( pattern ) => {
-                        var ocn_clip_name_match = ocn_clip._name.match(pattern);
+                        var ocn_clip_name_match = ocn_clip.name.match(pattern);
                         var grade_clip_name_match = grade.identifier.match(pattern);
                         if ( ( ocn_clip_name_match && grade_clip_name_match ) ) {
                             if ( ocn_clip_name_match[0] == grade_clip_name_match[0] ) {
@@ -279,11 +274,11 @@ class App {
         if ( paired_ccc ) {
             // Then the grades need to take on a unique "cc00001" ID and the EDL reference that
             clips.forEach( (clip) => {
-                var edl_clip = new Clip(
-                    clip._name,
-                    clip._starttc,
-                    clip._endtc,
-                    clip._fps,
+                var edl_clip = new EDLClip(
+                    clip.name,
+                    clip.start_tc,
+                    clip.end_tc,
+                    clip.fps,
                 );
                 if ( clip.matched_grades.length > 0 ) {
                     var grade = clip.matched_grades[0];
@@ -300,10 +295,10 @@ class App {
         else {
             clips.forEach( (clip) => {
                 var edl_clip = new Clip(
-                    clip._name,
-                    clip._starttc,
-                    clip._endtc,
-                    clip._fps,
+                    clip.name,
+                    clip.start_tc,
+                    clip.end_tc,
+                    clip.fps,
                 );
                 if ( clip.matched_grades.length > 0 ) {
                     var grade = clip.matched_grades[0];
@@ -415,10 +410,10 @@ function populate_ocn_clips() {
         var row = tbody.insertRow(-1);
         // OCN Clip Name
         var cell_source_file_name = row.insertCell(0);
-        cell_source_file_name.textContent = ocn_clip['_name'];
+        cell_source_file_name.textContent = ocn_clip.name;
         // OCN Clip Duration
         var cell_duration = row.insertCell(1);
-        var dur = new Timecode(ocn_clip['_duration'], ocn_clip['_fps']);
+        var dur = ocn_clip.duration;
         if ( dur.hours <= 0 ) {
         	cell_duration.textContent = `${dur.minutes}m ${dur.seconds}s`;
         }
@@ -428,7 +423,7 @@ function populate_ocn_clips() {
 
         // OCN Clip Start TC
         var cell_start_tc = row.insertCell(-1);
-        cell_start_tc.textContent = ocn_clip['_starttc'];
+        cell_start_tc.textContent = ocn_clip.start_tc;
         var cell_matched_grade_identifier = row.insertCell(-1);
         var cell_matched_grade_scene = row.insertCell(-1);
         var cell_matched_grade_take = row.insertCell(-1);
@@ -484,7 +479,7 @@ function output_ocn_clips_to_file(file_type) {
             // Only the first grade if multiple.
             var grade = ocn_clip.matched_grades[0]; 
             // Assign the matched OCN clip name as the identifier for export.
-            grade.set_export_identifier(ocn_clip._name);
+            grade.set_export_identifier(ocn_clip.name);
         	output_grades.push(grade);
         }
     });

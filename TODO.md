@@ -1,5 +1,8 @@
 ## Bugs
-* 
+
+## Currently working on
+* 'Clip' and 'Grade' objects, to enable a unique ID for the file that they came from, and a consistent object with consistent attributes (like name)
+
 
 ## Functionality
 * 'Clear' buttons removes all Clips and all Grades

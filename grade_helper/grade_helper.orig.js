@@ -36,65 +36,13 @@ pseudocode logic
 
 // GLOBALS
 
-const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', ]; /* In order of selection */
 const ALE_COL_NAMES_START_TIMECODE = [ 'Start', 'TC Start', 'StartTC', 'Start TC', ];
 const ALE_COL_NAMES_END_TIMECODE = [ 'End', 'TC End', 'EndTC', 'End TC', ];
-const ALE_COL_NAMES_FPS = [ 'FPS', 'Project FPS', 'Speed', ];
 const ALE_COL_NAMES_DURATION = [ 'Duration', 'Clip Duration', ];
+const ALE_COL_NAMES_FPS = [ 'FPS', 'Project FPS', 'Speed', ];
+const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', ]; /* In order of selection */
 
 const DEFAULT_FPS_UNSPECIFIED = 25;
-
-class Clip {
-    constructor() {
-        function get_clip_attributes_from_entry(entry) {
-            var clip;
-            const map_columns_to_values = {
-                name: ALE_COL_NAMES_CLIPNAME,
-                start_tc: ALE_COL_NAMES_START_TIMECODE,
-                end_tc: ALE_COL_NAMES_END_TIMECODE,
-                fps: ALE_COL_NAMES_FPS,
-                duration: ALE_COL_NAMES_DURATION,
-            };
-            // Search
-            for ( const [attr, colnames] of Object.entries( map_columns_to_values ) ) {
-                for ( let colname in colnames ) {
-                    if ( entry.hasOwn(colname) ) {
-                        if ( entry[colname] ) {
-                        	clip[attr] = entry[colname];
-                        }
-                        else {
-                            clip[attr] = '';
-                        }
-                    }
-                    else {
-                        clip[attr] = '';
-                    }
-                }
-            }
-            return clip;
-        }
-        // If for some reason this item has no Start TC, End TC, FPS, Duration
-        // Then it is not truly a clip.
-        if ( !( item.start_tc && item.end_tc && item.duration && item['_fps'] ) ) {
-            return;
-        }
-
-        /*
-
-        // Calculate duration if start & end TC are defined
-            if ( !item['_duration'] ) {
-                if ( item['_starttc'] && item['_endtc'] && item['_fps'] ) {
-                    let fps = parseInt(item['_fps']);
-                    let start_tc = new Timecode(item['_starttc'], fps );
-                    let end_tc = new Timecode(item['_endtc'], fps );
-                    let duration = end_tc.subtract(start_tc);
-                    item['_duration'] = duration;
-                }
-            }
-        */
-    }
-}
-
 
 class App {
 
@@ -106,19 +54,21 @@ class App {
     }
     input_file_ocn(filetype, file_data, filename) {
         var fileext = filetype.toLowerCase();
+        // Unique ID
+        var id = Symbol();
         // Parse content
-        var parsed_rows;
+        var parsed_items;
         if ( fileext == 'ale' ) {
             // Build clip objects
             var ale = alelib.parse_ale(file_data, filename);
-            parsed_rows = ale.items;
+            parsed_items = ale.items;
         }
         else if ( fileext == 'csv' ) {
             var csv = Papa.parse(file_data, {
                 header: true,
                 skipEmptyLines: true,
             });
-            parsed_rows = csv.data;
+            parsed_items = csv.data;
         }
         else {
             user_input_warning_trigger('app_input_ocn_warning', 'Only accepts files: .ale');
@@ -126,11 +76,71 @@ class App {
             return;
         }
         var count = 0;
-        parsed_rows.forEach( (item) => {
-        	// Gather common metadata per clip for easy access within this app
-        	
-
+        parsed_items.forEach( (item) => {
             count += 1;
+            // Save a space for matched grades
+            item['matched_grades'] = [];
+        	// Gather common metadata per clip for easy access within this app
+        	// Name
+            ALE_COL_NAMES_CLIPNAME.some( (name_field) => {
+                if ( name_field in item ) {
+                    item['_name'] = item[name_field];
+                    return true;
+                }
+                // Else
+                item['_name'] = '';
+            });
+            // Start TC
+            ALE_COL_NAMES_START_TIMECODE.some( (name_field) => {
+                if ( name_field in item ) {
+                    item['_starttc'] = item[name_field];
+                    return true;
+                }
+                // Else
+                item['_starttc'] = '';
+            });
+            // End TC
+            ALE_COL_NAMES_END_TIMECODE.some( (name_field) => {
+                if ( name_field in item ) {
+                    item['_endtc'] = item[name_field];
+                    return true;
+                }
+                // Else
+                item['_endtc'] = '';
+            });
+            // FPS 
+            ALE_COL_NAMES_FPS.some( (name_field) => {
+                if ( name_field in item ) {
+                    item['_fps'] = item[name_field];
+                    return true;
+                }
+                // Else
+                item['_fps'] = '';
+            });
+            // Duration
+            ALE_COL_NAMES_DURATION.some( (name_field) => {
+                if ( name_field in item ) {
+                    item['_duration'] = item[name_field];
+                    return true;
+                }
+                // Else
+                item['_duration'] = '';
+                // Calculate duration if start & end TC are defined
+                if ( !item['_duration'] ) {
+                    if ( item['_starttc'] && item['_endtc'] && item['_fps'] ) {
+                        let fps = parseInt(item['_fps']);
+                        let start_tc = new Timecode(item['_starttc'], fps );
+                        let end_tc = new Timecode(item['_endtc'], fps );
+                        let duration = end_tc.subtract(start_tc);
+                        item['_duration'] = duration;
+                    }
+                }
+            });
+            // If for some reason this item has no Start TC, End TC, FPS, Duration
+            // Then it is not truly a clip. Remove it.
+            if ( !( item['_starttc'] && item['_endtc'] && item['_duration'] && item['_fps'] ) ) {
+                return;
+            }
             // Attach ID
             item.input_file = id;
             // Otherwise save our progress.
