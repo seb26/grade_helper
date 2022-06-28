@@ -64,6 +64,8 @@ class Clip {
             let duration = end_tc.subtract(start_tc);
             this.duration = duration;
         }
+        // Defaults
+        this.matched_grades = [];
     }
 }
 
@@ -107,18 +109,18 @@ class App {
             };
             // Search
             for ( const [attr, colnames] of Object.entries( map_columns_to_values ) ) {
-                for ( let colname in colnames ) {
+                var match_found = false;
+                colnames.forEach( (colname) => {
                     if ( entry.hasOwnProperty(colname) ) {
                         if ( entry[colname] ) {
-                        	rough_clip[attr] = entry[colname];
-                        }
-                        else {
-                            rough_clip[attr] = '';
+                            rough_clip[attr] = entry[colname];
+                            match_found = true;
                         }
                     }
-                    else {
-                        rough_clip[attr] = '';
-                    }
+                });
+                // Fill unfound values
+                if ( !match_found ) {
+                    rough_clip[attr] = '';
                 }
             }
             return rough_clip;
@@ -133,7 +135,6 @@ class App {
                 return;
             }
             var clip_obj = new Clip(clip_rough);
-            console.log(clip_obj);
             count += 1;
             // Attach ID
             clip_obj.input_file_id = file_id;
@@ -362,16 +363,16 @@ function populate_filelist_ocn() {
             li.classList.add('filelist_item');
             var name = document.createElement('span');
             name.classList.add('filelist_item_name');
-            name.innerHTML = input_file;
+            name.textContent = input_file;
             var eventcount = document.createElement('span');
             eventcount.classList.add('filelist_item_eventcount');
-            eventcount.innerHTML = app.input_files_ocn[input_file].eventcount;
+            eventcount.textContent = app.input_files_ocn[input_file].eventcount;
             li.appendChild( name );
             li.appendChild( eventcount );
             filelist.appendChild( li );
             count += 1;
         };
-        document.getElementById('app_input_ocn_filelist_count').innerHTML = count + ' file(s)';
+        document.getElementById('app_input_ocn_filelist_count').textContent = count + ' file(s)';
     }
 }
 function populate_filelist_grades() {
@@ -388,16 +389,23 @@ function populate_filelist_grades() {
             li.classList.add('filelist_item');
             var name = document.createElement('span');
             name.classList.add('filelist_item_name');
-            name.innerHTML = input_file;
+            name.textContent = input_file;
             var eventcount = document.createElement('span');
             eventcount.classList.add('filelist_item_eventcount');
-            eventcount.innerHTML = app.input_files_grades[input_file].eventcount;
+            eventcount.textContent = app.input_files_grades[input_file].eventcount;
+            var btn_delete = document.createElement('div');
+            btn_delete.classList.add('btn', 'btn-outline-primary');
+            btn_delete.classList.add('filelist_item_delete');
+            btn_delete.textContent = 'delete';
+            // Event handler for the delete button
+            addEventListener('click', event_clear_filelist
             li.appendChild( name );
             li.appendChild( eventcount );
+            li.appendChild( btn_delete );
             filelist.appendChild( li );
             count += 1;
         };
-        document.getElementById('app_input_grades_filelist_count').innerHTML = count + ' file(s)';
+        document.getElementById('app_input_grades_filelist_count').textContent = count + ' file(s)';
     }
 }
 function populate_ocn_clips() {
