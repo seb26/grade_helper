@@ -36,6 +36,9 @@ pseudocode logic
 
 // GLOBALS
 
+const APP_INPUT_FILE_GRADES = Symbol('GRADES');
+const APP_INPUT_FILE_OCN_CLIP_LIST = Symbol('OCN_CLIP_LIST');
+
 const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', ]; /* In order of selection */
 const ALE_COL_NAMES_START_TIMECODE = [ 'Start', 'TC Start', 'StartTC', 'Start TC', ];
 const ALE_COL_NAMES_END_TIMECODE = [ 'End', 'TC End', 'EndTC', 'End TC', ];
@@ -68,18 +71,22 @@ class Clip {
         this.matched_grades = [];
     }
 }
+class Grade {
+
+}
 
 class App {
 
     constructor() {
-        this.input_files_ocn = {};
-        this.input_files_grades = {};
+        this.input_files = {};
+        this.input_files[APP_INPUT_FILE_OCN_CLIP_LIST] = [];
+        this.input_files[APP_INPUT_FILE_GRADES] = [];
         this.ocn_clips = [];
         this.grades = [];
     }
     input_file_ocn(filetype, file_data, filename) {
         var file_ext = filetype.toLowerCase();
-        var file_id = Symbol();
+        var file_id = uuidv4();
         // Parse content
         var parsed_rows;
         if ( file_ext == 'ale' ) {
@@ -142,18 +149,22 @@ class App {
             this.ocn_clips.push(clip_obj);
         });
         // Update the list of inputted files
-        this.input_files_ocn[filename] = {
+        this.input_files[APP_INPUT_FILE_OCN_CLIP_LIST][file_id] = {
             'id': file_id,
+            'category': APP_INPUT_FILE_OCN_CLIP_LIST,
+            'filename': filename,
             'filetype': file_ext,
             'data': file_data,
             'eventcount': count,
         };
-        populate_filelist_ocn();
+        populate_filelist(APP_INPUT_FILE_OCN_CLIP_LIST);
+        // Clear the browser input field when done
+        document.getElementById('app_input_ocn_filepicker').value = '';
     }
     input_file_grades(filetype, file_data, filename) {
 		var fileext = filetype.toLowerCase();
         // Unique ID
-        var id = Symbol();
+        var file_id = uuidv4();
         // Parse content
         var parsed_items;
         if ( fileext == 'ccc' || fileext == 'cdl' ) {
@@ -172,18 +183,47 @@ class App {
         }
         var count = 0;
         parsed_items.forEach( (item) => {
-            item.input_file = id;
+            item.input_file = file_id;
             this.grades.push(item);
             count += 1;
         });
         // Update the list of inputted files
-        this.input_files_grades[filename] = {
+        this.input_files[APP_INPUT_FILE_GRADES][file_id] = {
+            'id': file_id,
+            'category': APP_INPUT_FILE_GRADES,
+            'filename': filename,
             'filetype': fileext,
-            'id': id,
             'data': file_data,
             'eventcount': count,
         };
-        populate_filelist_grades();
+        populate_filelist(APP_INPUT_FILE_GRADES);
+        // Clear the browser input field when done
+        document.getElementById('app_input_grades_filepicker').value = '';
+
+    }
+    delete_items(items, filelist_category, file_object=false) {
+        if ( !file_object ) {
+            console.log('no file specified doing all');
+        	// Clear *all* items for that category
+            items.length = 0;
+        }
+        else {
+        	// Clear grades/OCN clips that came from that specified input file
+            var matching_items = items.filter(item => item.input_file_id == file_object.id);
+            matching_items.forEach( (item) => {
+                var index = items.indexOf(item);
+                items.splice(index, 1);
+            });
+            // Clear the filelist item
+            console.log('before', this.input_files);
+            // delete app.input_files[filelist_category][file_object.id];
+            console.log('after', this.input_files);
+        }
+        // Repopulate filelist
+        console.log('at this point in time we have:', app);
+        populate_filelist(filelist_category);
+        // Repopulate items
+        populate_items_by_category(filelist_category);
     }
     match_grades_to_ocn_auto() {
         this.ocn_clips.forEach( (ocn_clip) => {
@@ -349,63 +389,64 @@ function browser_output_file_as_download(data, filename) {
 }
 
 // LIST POPULATION
-function populate_filelist_ocn() {
-    var filelist = document.getElementById('app_input_ocn_filelist');
-    var filelist_count = document.getElementById('app_input_ocn_filelist_count');
-    // Clear the list to keep it current.
-    filelist.replaceChildren();
-
-    // Then populate.
-    if ( app.input_files_ocn ) {
-        var count = 0;
-        for ( var input_file in app.input_files_ocn ) {
-            var li = document.createElement('li');
-            li.classList.add('filelist_item');
-            var name = document.createElement('span');
-            name.classList.add('filelist_item_name');
-            name.textContent = input_file;
-            var eventcount = document.createElement('span');
-            eventcount.classList.add('filelist_item_eventcount');
-            eventcount.textContent = app.input_files_ocn[input_file].eventcount;
-            li.appendChild( name );
-            li.appendChild( eventcount );
-            filelist.appendChild( li );
-            count += 1;
-        };
-        document.getElementById('app_input_ocn_filelist_count').textContent = count + ' file(s)';
+function populate_filelist(filelist_category) {
+    if ( filelist_category == APP_INPUT_FILE_GRADES ) {
+        var all_items = app.grades;
+        var display_filelist = document.getElementById('app_input_grades_filelist');
+        var display_filelist_count = document.getElementById('app_input_grades_filelist_count');
     }
-}
-function populate_filelist_grades() {
-    var filelist = document.getElementById('app_input_grades_filelist');
-    var filelist_count = document.getElementById('app_input_grades_filelist_count');
+    else if ( filelist_category == APP_INPUT_FILE_OCN_CLIP_LIST ) {
+        var all_items = app.ocn_clips;
+        var display_filelist = document.getElementById('app_input_ocn_filelist');
+        var display_filelist_count = document.getElementById('app_input_ocn_filelist_count');
+    }
+    else {
+        throw new Error('populate_filelist: unrecognised filelist type: ', filelist_category);
+        return false;
+    }
     // Clear the list to keep it current.
-    filelist.replaceChildren();
+    display_filelist.replaceChildren();
 
     // Then populate.
-    if ( app.input_files_grades ) {
+    var input_files = app.input_files[filelist_category];
+    if ( input_files ) {
         var count = 0;
-        for ( var input_file in app.input_files_grades ) {
+        for ( const [id, input_file_obj] of Object.entries( input_files ) ) {
             var li = document.createElement('li');
             li.classList.add('filelist_item');
             var name = document.createElement('span');
             name.classList.add('filelist_item_name');
-            name.textContent = input_file;
+            name.textContent = input_file_obj.filename;
             var eventcount = document.createElement('span');
             eventcount.classList.add('filelist_item_eventcount');
-            eventcount.textContent = app.input_files_grades[input_file].eventcount;
+            eventcount.textContent = input_file_obj.eventcount;
             var btn_delete = document.createElement('div');
             btn_delete.classList.add('btn', 'btn-outline-primary');
             btn_delete.classList.add('filelist_item_delete');
+            btn_delete.dataset.file_id = input_file_obj.id;
             btn_delete.textContent = 'delete';
             // Event handler for the delete button
-            addEventListener('click', event_clear_filelist
+            btn_delete.addEventListener('click', function() {
+                app.delete_items(all_items, filelist_category, input_file_obj);
+            }, false);
             li.appendChild( name );
             li.appendChild( eventcount );
             li.appendChild( btn_delete );
-            filelist.appendChild( li );
+            display_filelist.appendChild( li );
             count += 1;
-        };
-        document.getElementById('app_input_grades_filelist_count').textContent = count + ' file(s)';
+        }
+        display_filelist_count.textContent = count + ' file(s)';
+    }
+}
+function populate_items_by_category(category) {
+    if ( category == APP_INPUT_FILE_GRADES ) {
+        populate_grades();
+    }
+    else if ( category == APP_INPUT_FILE_OCN_CLIP_LIST ) {
+        populate_ocn_clips();
+    }
+    else {
+        return;
     }
 }
 function populate_ocn_clips() {
@@ -562,23 +603,16 @@ function event_read_files_dropped(e) {
 function event_read_files_selected(e) {
     event_read_files_from_user_input(e, e.target.files);
 }
-function event_clear_filelist_ocn(e) {
-    // Clear the browser filepicker element
-    document.getElementById('app_input_ocn_filepicker').value = '';
-    // Clear items
-    app.input_files_ocn = {};
-    // Refresh display
-    document.getElementById('app_input_ocn_filelist').replaceChildren();
-    document.getElementById('app_input_ocn_filelist_count').innerHTML = '0 files';
-}
-function event_clear_filelist_grades(e) {
-    // Clear the browser filepicker element
-    document.getElementById('app_input_grades_filepicker').value = '';
-    // Clear items
-    app.input_files_grades = {};
-    // Refresh display
-    document.getElementById('app_input_grades_filelist').replaceChildren();
-    document.getElementById('app_input_grades_filelist_count').innerHTML = '0 files';
+function event_remove_items_by_type(e) {
+    var contenttype = e.target.dataset.contenttype;
+    if ( contenttype == 'grades' ) {
+        // Delete all
+        app.delete_items(app.grades, APP_INPUT_FILE_GRADES);
+    }
+    else if ( contenttype == 'ocn' ) {
+        // Delete all
+        app.delete_items(app.ocn_clips, APP_INPUT_FILE_OCN_CLIP_LIST);
+    }
 }
 function event_match_auto_match_grades(e) {
     app.match_grades_to_ocn_auto();
@@ -632,18 +666,18 @@ const alelib = new ALELib();
 // INPUT: OCN FILE LISTS
 const app_input_ocn_droparea = document.getElementById('app_input_ocn_droparea');
 const app_input_ocn_filepicker = document.getElementById('app_input_ocn_filepicker');
-const app_input_ocn_filelist_clearall = document.getElementById('app_input_ocn_filelist_clearall');
+const app_input_ocn_filelist_removeall = document.getElementById('app_input_ocn_filelist_removeall');
 app_input_ocn_droparea.addEventListener('drop', event_read_files_dropped, false);
 app_input_ocn_filepicker.addEventListener('change', event_read_files_selected, false);
-app_input_ocn_filelist_clearall.addEventListener('click', event_clear_filelist_ocn, false);
+app_input_ocn_filelist_removeall.addEventListener('click', event_remove_items_by_type, false);
 
 // INPUT: GRADES
 const app_input_grades_droparea = document.getElementById('app_input_grades_droparea');
 const app_input_grades_filepicker = document.getElementById('app_input_grades_filepicker');
-const app_input_grades_filelist_clearall = document.getElementById('app_input_grades_filelist_clearall');
+const app_input_grades_filelist_removeall = document.getElementById('app_input_grades_filelist_removeall');
 app_input_grades_droparea.addEventListener('drop', event_read_files_dropped, false);
 app_input_grades_filepicker.addEventListener('change', event_read_files_selected, false);
-app_input_grades_filelist_clearall.addEventListener('click', event_clear_filelist_grades, false);
+app_input_grades_filelist_removeall.addEventListener('click', event_remove_items_by_type, false);
 
 // MATCH
 const app_match_btn_auto_match = document.getElementById('app_match_btn_auto_match');
