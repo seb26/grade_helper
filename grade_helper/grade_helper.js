@@ -34,18 +34,20 @@ pseudocode logic
 	javascript bootstrap popup
 */
 
-// GLOBALS
+// GLOBAL SETTINGS - USER
+const APP_OCN_CLIP_LIST_IGNORE_FILE_EXTENSIONS = [ 'xml', 'ale', 'bin' ]; /* We know these are not valid clips */
+const APP_DEFAULT_FPS_UNSPECIFIED = 25;
 
-const APP_INPUT_FILE_GRADES = Symbol('GRADES');
-const APP_INPUT_FILE_OCN_CLIP_LIST = Symbol('OCN_CLIP_LIST');
-
-const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', ]; /* In order of selection */
+const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', 'File Name', ]; /* In order of selection */
 const ALE_COL_NAMES_START_TIMECODE = [ 'Start', 'TC Start', 'StartTC', 'Start TC', ];
 const ALE_COL_NAMES_END_TIMECODE = [ 'End', 'TC End', 'EndTC', 'End TC', ];
 const ALE_COL_NAMES_FPS = [ 'FPS', 'Project FPS', 'Speed', ];
 const ALE_COL_NAMES_DURATION = [ 'Duration', 'Clip Duration', ];
 
-const DEFAULT_FPS_UNSPECIFIED = 25;
+
+// CATEGORIES
+const APP_GRADE = Symbol('APP_GRADE');
+const APP_OCN_CLIP = Symbol('APP_OCN_CLIP');
 
 class Clip {
     constructor(clip_attribs = {
@@ -79,30 +81,34 @@ class App {
 
     constructor() {
         this.input_files = {};
-        this.input_files[APP_INPUT_FILE_OCN_CLIP_LIST] = [];
-        this.input_files[APP_INPUT_FILE_GRADES] = [];
-        this.ocn_clips = [];
-        this.grades = [];
+        this.input_files[APP_OCN_CLIP] = {};
+        this.input_files[APP_GRADE] = {};
+        this.items = {};
+        this.items[APP_OCN_CLIP] = [];
+        this.items[APP_GRADE] = [];
     }
     input_file_ocn(filetype, file_data, filename) {
         var file_ext = filetype.toLowerCase();
         var file_id = uuidv4();
         // Parse content
         var parsed_rows;
+        var parsed_file_object;
         if ( file_ext == 'ale' ) {
-            var ale = alelib.parse_ale(file_data, filename);
-            parsed_rows = ale.items;
+            var parsed_file_object = alelib.parse_ale(file_data, filename);
+            parsed_rows = parsed_file_object.items;
         }
         else if ( file_ext == 'csv' ) {
-            var csv = Papa.parse(file_data, {
+            var parsed_file_object = Papa.parse(file_data, {
                 header: true,
                 skipEmptyLines: true,
             });
-            parsed_rows = csv.data;
+            parsed_rows = parsed_file_object.data;
         }
         else {
-            user_input_warning_trigger('app_input_ocn_warning', 'Only accepts files: .ale');
-            event_clear_filelist_ocn();
+            user_input_warning_trigger(
+                'app_input_ocn_warning',
+                `Unaccepted file type (<code>${filetype}</code>).`
+            );
             return;
         }
         function get_clip_attributes_from_entry(entry) {
@@ -130,34 +136,58 @@ class App {
                     rough_clip[attr] = '';
                 }
             }
+            if ( !rough_clip.fps ) {
+            	// If can't find FPS
+                if ( parsed_file_object instanceof ALE ) {
+            		// get the ALE's master FPS and apply it to each clip
+                    rough_clip.fps = parsed_file_object.fps;
+            	}
+                else {
+                    // Apply the default FPS
+                    rough_clip.fps = APP_DEFAULT_FPS_UNSPECIFIED;
+                    console.log(
+                    	`input_file_ocn(): ${rough_clip.name}: no FPS value found, using the app default (${rough_clip.fps}).`
+	                );
+                }
+            }
             return rough_clip;
         }
         var count = 0;
-        parsed_rows.forEach( (entry) => {
-            var clip_rough = get_clip_attributes_from_entry(entry);
-        	// If for some reason this item has no Name, Start TC, End TC, FPS,
-            // Then it is not truly a clip.
-            if ( !( clip_rough.name && clip_rough.start_tc && clip_rough.end_tc && clip_rough.fps ) ) {
-                // TODO: Debug console log here: index and clip name or first column 
+        parsed_rows.forEach( (entry, index) => {
+            var rough_clip = get_clip_attributes_from_entry(entry);
+            // Ignore these known file extensions because they are never true OCN clips
+            var file_ext_from_clip_name = rough_clip.name.slice((rough_clip.name.lastIndexOf('.') - 1 >>> 0) + 2);
+            if ( APP_OCN_CLIP_LIST_IGNORE_FILE_EXTENSIONS.includes(file_ext_from_clip_name) ) {
+                console.log(
+                    `input_file_ocn(): Ignoring ${rough_clip.name} (known file extension).`
+                );
                 return;
             }
-            var clip_obj = new Clip(clip_rough);
+        	// If for some reason this item has no Name, Start TC, End TC, FPS,
+            // Then it is not truly a clip.
+            if ( !( rough_clip.name && rough_clip.start_tc && rough_clip.end_tc && rough_clip.fps ) ) {
+                console.log(
+                    `input_file_ocn(): Could not find all valid attributes (name, start tc, end tc, fps) from this item: ${clip_rough.name} (${filename}, index ${index})`
+                );
+                return;
+            }
+            var clip_obj = new Clip(rough_clip);
             count += 1;
             // Attach ID
             clip_obj.input_file_id = file_id;
             // Otherwise save our progress.
-            this.ocn_clips.push(clip_obj);
+            this.items[APP_OCN_CLIP].push(clip_obj);
         });
         // Update the list of inputted files
-        this.input_files[APP_INPUT_FILE_OCN_CLIP_LIST][file_id] = {
+        this.input_files[APP_OCN_CLIP][file_id] = {
             'id': file_id,
-            'category': APP_INPUT_FILE_OCN_CLIP_LIST,
+            'category': APP_OCN_CLIP,
             'filename': filename,
             'filetype': file_ext,
             'data': file_data,
             'eventcount': count,
         };
-        populate_filelist(APP_INPUT_FILE_OCN_CLIP_LIST);
+        this.populate_filelist(APP_OCN_CLIP);
         // Clear the browser input field when done
         document.getElementById('app_input_ocn_filepicker').value = '';
     }
@@ -177,58 +207,205 @@ class App {
             parsed_items = cdllib.parse_csv(file_data, filename);
         }
         else {
-            user_input_warning_trigger('app_input_grades_warning', 'Only accepts files: .ccc, .cdl, .edl');
-            event_clear_filelist_grades();
+            user_input_warning_trigger(
+                'app_input_grades_warning',
+                `Unaccepted file type (<code>${filetype}</code>).`
+            );
             return;
         }
         var count = 0;
         parsed_items.forEach( (item) => {
-            item.input_file = file_id;
-            this.grades.push(item);
+            item.input_file_id = file_id;
+            this.items[APP_GRADE].push(item);
             count += 1;
         });
         // Update the list of inputted files
-        this.input_files[APP_INPUT_FILE_GRADES][file_id] = {
+        this.input_files[APP_GRADE][file_id] = {
             'id': file_id,
-            'category': APP_INPUT_FILE_GRADES,
+            'category': APP_GRADE,
             'filename': filename,
             'filetype': fileext,
             'data': file_data,
             'eventcount': count,
         };
-        populate_filelist(APP_INPUT_FILE_GRADES);
+        this.populate_filelist(APP_GRADE);
         // Clear the browser input field when done
         document.getElementById('app_input_grades_filepicker').value = '';
-
     }
-    delete_items(items, filelist_category, file_object=false) {
-        if ( !file_object ) {
-            console.log('no file specified doing all');
-        	// Clear *all* items for that category
-            items.length = 0;
+    populate_filelist(category) {
+        if ( category == APP_GRADE ) {
+            var items_all = this.items[APP_GRADE];
+            var input_files = this.input_files[APP_GRADE];
+            var display_filelist = document.getElementById('app_input_grades_filelist');
+            var display_filelist_count = document.getElementById('app_input_grades_filelist_count');
+        }
+        else if ( category == APP_OCN_CLIP ) {
+            var items_all = this.items[APP_OCN_CLIP];
+            var input_files = this.input_files[APP_OCN_CLIP];
+            var display_filelist = document.getElementById('app_input_ocn_filelist');
+            var display_filelist_count = document.getElementById('app_input_ocn_filelist_count');
         }
         else {
-        	// Clear grades/OCN clips that came from that specified input file
-            var matching_items = items.filter(item => item.input_file_id == file_object.id);
-            matching_items.forEach( (item) => {
-                var index = items.indexOf(item);
-                items.splice(index, 1);
-            });
-            // Clear the filelist item
-            console.log('before', this.input_files);
-            // delete app.input_files[filelist_category][file_object.id];
-            console.log('after', this.input_files);
+            throw new Error('populate_filelist: unrecognised filelist type: ', category);
+            return false;
         }
-        // Repopulate filelist
-        console.log('at this point in time we have:', app);
-        populate_filelist(filelist_category);
-        // Repopulate items
-        populate_items_by_category(filelist_category);
+        // Clear the list to keep it current.
+        display_filelist.replaceChildren();
+
+        // Then populate.
+        if ( input_files ) {
+            var count = 0;
+            for ( const [id, input_file_obj] of Object.entries( input_files ) ) {
+                var li = document.createElement('li');
+                li.classList.add('filelist_item');
+                var name = document.createElement('span');
+                name.classList.add('filelist_item_name');
+                name.textContent = input_file_obj.filename;
+                var eventcount = document.createElement('span');
+                eventcount.classList.add('filelist_item_eventcount');
+                eventcount.textContent = input_file_obj.eventcount;
+                var btn_delete = document.createElement('div');
+                btn_delete.classList.add('btn', 'btn-outline-primary');
+                btn_delete.classList.add('filelist_item_delete');
+                btn_delete.dataset.file_id = input_file_obj.id;
+                btn_delete.textContent = 'delete';
+                // Event handler for the delete button
+                btn_delete.addEventListener('click', function() {
+                    this.delete_items_from_input_file(category, input_file_obj);
+                }.bind(this), false);
+                li.appendChild( name );
+                li.appendChild( eventcount );
+                li.appendChild( btn_delete );
+                display_filelist.appendChild( li );
+                count += 1;
+            }
+            display_filelist_count.textContent = count + ' file(s)';
+        }
+    }
+    populate_items_by_category(category) {
+        if ( category == APP_GRADE ) {
+            this.populate_grades();
+        }
+        else if ( category == APP_OCN_CLIP ) {
+            this.populate_ocn_clips();
+        }
+        else {
+            return;
+        }
+    }
+    populate_ocn_clips() {
+        var tbody = document.getElementById('app_ocn_clips_tbody');
+        // Clear the table on each update to keep it current
+        tbody.innerHTML = '';
+        // Then work.
+        this.items[APP_OCN_CLIP].forEach( (ocn_clip, clip_index) => {
+            var row = tbody.insertRow(-1);
+            // OCN Clip Name
+            var cell_source_file_name = row.insertCell(-1);
+            cell_source_file_name.textContent = ocn_clip.name;
+            // OCN Clip Duration
+            var cell_duration = row.insertCell(-1);
+            var dur = ocn_clip.duration;
+            if ( dur.hours <= 0 ) {
+            	cell_duration.textContent = `${dur.minutes}m ${dur.seconds}s`;
+            }
+            else {
+                cell_duration.textContent = dur;
+            }
+
+            // OCN Clip Start TC
+            var cell_start_tc = row.insertCell(-1);
+            cell_start_tc.textContent = ocn_clip.start_tc;
+            var cell_matched_grade_clear = row.insertCell(-1);
+            var cell_matched_grade_identifier = row.insertCell(-1);
+            var cell_matched_grade_scene = row.insertCell(-1);
+            var cell_matched_grade_take = row.insertCell(-1);
+            var cell_matched_grade_sop = row.insertCell(-1);
+            var cell_matched_grade_sat = row.insertCell(-1);
+            // Fill with matched grades
+            if ( ocn_clip['matched_grades'].length > 0 ) {
+                // Clear button
+                var btn_matched_grade_clear = document.createElement('div');
+                btn_matched_grade_clear.classList.add('btn', 'btn-outline-primary');
+                btn_matched_grade_clear.classList.add('grade_matched_clear');
+                btn_matched_grade_clear.dataset.clip_index = clip_index;
+                btn_matched_grade_clear.textContent = 'x';
+                // Event handler for the clear button
+                btn_matched_grade_clear.addEventListener('click', function() {
+                    this.clear_matches_from_clip(ocn_clip, clip_index);
+                }.bind(this), false);
+                // Add the button
+                cell_matched_grade_clear.appendChild( btn_matched_grade_clear );
+                // Add in matched grade display info
+                var matched_grade = ocn_clip['matched_grades'][0];
+                cell_matched_grade_identifier.textContent = matched_grade.identifier;
+                cell_matched_grade_scene.textContent = matched_grade.metadata.scene ?? '';
+                cell_matched_grade_take.textContent = matched_grade.metadata.take ?? '';
+                cell_matched_grade_sop.textContent = matched_grade.sop_as_string;
+                cell_matched_grade_sat.textContent = matched_grade.sat_as_string;
+            }
+            else {
+                cell_matched_grade_identifier.textContent = '';
+            }
+        });
+    }
+    populate_grades() {
+        var tbody = document.getElementById('app_grades_tbody');
+        // Clear the table on each update to keep it current
+        tbody.innerHTML = '';
+        // Then work.
+        this.items[APP_GRADE].forEach( (grade) => {
+            var row = tbody.insertRow(-1);
+            var cell_grade_name = row.insertCell(-1);
+            var cell_start_tc = row.insertCell(-1);
+            var cell_scene = row.insertCell(-1);
+            var cell_take = row.insertCell(-1);
+            var cell_sop = row.insertCell(-1);
+            var cell_sat = row.insertCell(-1);
+            cell_grade_name.textContent = grade.identifier;
+            cell_start_tc.textContent = grade.metadata.start_tc ?? '';
+            cell_scene.textContent = grade.metadata.scene ?? '';
+            cell_take.textContent = grade.metadata.take ?? '';
+            cell_sop.textContent = grade.sop_as_string;
+            cell_sat.textContent = grade.sat_as_string;
+        });
+    }
+    delete_items_from_input_file(category, file_object) {
+        // Repopulate items that don't match the ID - aka they are removed
+        this.items[category] = this.items[category].filter(
+            item => item.input_file_id != file_object.id
+        );
+        // Clear the filelist item
+        delete this.input_files[category][file_object.id];
+        // Repopulate displays
+        this.populate_filelist(category);
+        this.populate_items_by_category(category);
+    }
+    delete_items_all(category) {
+        this.items[category].length = 0;
+        // Clear the filelist items
+        this.input_files[category] = {};
+        // Repopulate displays
+        this.populate_filelist(category);
+        this.populate_items_by_category(category);
+    }
+    clear_matches_all() {
+        // Iterate and clear matched grades on all items
+        this.items[APP_OCN_CLIP].forEach( (ocn_clip) => {
+            ocn_clip.matched_grades.length = 0;
+        });
+        // Repopulate
+        this.populate_items_by_category(APP_OCN_CLIP);
+    }
+    clear_matches_from_clip(ocn_clip) {
+        ocn_clip.matched_grades.length = 0;
+        // Repopulate
+        this.populate_items_by_category(APP_OCN_CLIP);
     }
     match_grades_to_ocn_auto() {
-        this.ocn_clips.forEach( (ocn_clip) => {
+        this.items[APP_OCN_CLIP].forEach( (ocn_clip) => {
 
-            this.grades.forEach( (grade) => {
+            this.items[APP_GRADE].forEach( (grade) => {
                 // First establish FPS
                 var fps;
                 if ( grade.fps ) {
@@ -238,7 +415,7 @@ class App {
                     fps = ocn_clip.fps;
                 }
                 else {
-                    fps = DEFAULT_FPS_UNSPECIFIED;
+                    fps = APP_DEFAULT_FPS_UNSPECIFIED;
                 }
                 var match_found = false;
                 while ( !match_found ) {
@@ -295,7 +472,66 @@ class App {
                 }
             });
         });
-        populate_ocn_clips();
+        this.populate_ocn_clips();
+    }
+    output_ocn_clips_to_file(file_type) {
+        var output_clips = [];
+        var output_grades = [];
+        var output_files = [];
+        this.items[APP_OCN_CLIP].forEach( (ocn_clip) => {
+            // Save
+            output_clips.push(ocn_clip);
+            // Gather the grades in a separate list, to be used by CCC export
+            // which doesn't require any knowledge of ocn clips
+            if ( ocn_clip.matched_grades.length > 0 ) {
+                // Only the first grade if multiple.
+                var grade = ocn_clip.matched_grades[0]; 
+                // Assign the matched OCN clip name as the identifier for export.
+                grade.set_export_identifier(ocn_clip.name);
+            	output_grades.push(grade);
+            }
+        });
+        if ( file_type == 'ccc' ) {
+            output_files.push( this.export_ccc_cdl(output_grades, 'ccc') );
+        }
+        else if ( file_type == 'cdl-single' ) {
+            // Output all grades into a single ColorDecisionList with multiple Corrections
+            output_files.push( this.export_ccc_cdl(output_grades, 'cdl') );
+        }
+        else if ( file_type == 'cdl-multiple' ) {
+            // Output grades into one ColorDecisionList per ColorCorrection
+            output_grades.forEach( (grade) => {
+                output_files.push( this.export_ccc_cdl([ grade ], 'cdl') );
+            });
+        }
+        else if ( file_type == 'edl+ccc' ) {
+            var edl = this.export_edl(output_clips, paired_ccc=true);
+            output_files.push( edl );
+            if ( edl.grades ) {
+            	output_files.push( this.export_ccc_cdl(edl.grades, 'ccc', use_ccc_identifier=true) );
+            }
+        }
+        else if ( file_type == 'edl' ) {
+            output_files.push( this.export_edl(output_clips) );
+        }
+        return output_files;
+    }
+    output_grades_to_file(file_type) {
+        var output_files = [];
+        if ( file_type == 'ccc' ) {
+            output_files.push( this.export_ccc_cdl(this.grades, 'ccc') );
+        }
+        else if ( file_type == 'cdl-single' ) {
+            // Output all grades into a single ColorDecisionList with multiple Corrections
+            output_files.push( this.export_ccc_cdl(this.grades, 'cdl') );
+        }
+        else if ( file_type == 'cdl-multiple' ) {
+            // Output grades into one ColorDecisionList per ColorCorrection
+            this.items[APP_GRADE].forEach( (grade) => {
+                output_files.push( this.export_ccc_cdl([ grade ], 'cdl') );
+            });
+        }
+        return output_files;
     }
     export_ccc_cdl(grades, file_ext, use_ccc_identifier=false) {
         var output_data = cdllib.export(
@@ -354,7 +590,7 @@ class App {
             'data': edl.export(),
             'grades': grades_with_paired_ccc ?? undefined,
         };
-    } 
+    }
 }
 
 // BROWSER FILE HANDLING
@@ -388,193 +624,6 @@ function browser_output_file_as_download(data, filename) {
     document.body.removeChild(download);
 }
 
-// LIST POPULATION
-function populate_filelist(filelist_category) {
-    if ( filelist_category == APP_INPUT_FILE_GRADES ) {
-        var all_items = app.grades;
-        var display_filelist = document.getElementById('app_input_grades_filelist');
-        var display_filelist_count = document.getElementById('app_input_grades_filelist_count');
-    }
-    else if ( filelist_category == APP_INPUT_FILE_OCN_CLIP_LIST ) {
-        var all_items = app.ocn_clips;
-        var display_filelist = document.getElementById('app_input_ocn_filelist');
-        var display_filelist_count = document.getElementById('app_input_ocn_filelist_count');
-    }
-    else {
-        throw new Error('populate_filelist: unrecognised filelist type: ', filelist_category);
-        return false;
-    }
-    // Clear the list to keep it current.
-    display_filelist.replaceChildren();
-
-    // Then populate.
-    var input_files = app.input_files[filelist_category];
-    if ( input_files ) {
-        var count = 0;
-        for ( const [id, input_file_obj] of Object.entries( input_files ) ) {
-            var li = document.createElement('li');
-            li.classList.add('filelist_item');
-            var name = document.createElement('span');
-            name.classList.add('filelist_item_name');
-            name.textContent = input_file_obj.filename;
-            var eventcount = document.createElement('span');
-            eventcount.classList.add('filelist_item_eventcount');
-            eventcount.textContent = input_file_obj.eventcount;
-            var btn_delete = document.createElement('div');
-            btn_delete.classList.add('btn', 'btn-outline-primary');
-            btn_delete.classList.add('filelist_item_delete');
-            btn_delete.dataset.file_id = input_file_obj.id;
-            btn_delete.textContent = 'delete';
-            // Event handler for the delete button
-            btn_delete.addEventListener('click', function() {
-                app.delete_items(all_items, filelist_category, input_file_obj);
-            }, false);
-            li.appendChild( name );
-            li.appendChild( eventcount );
-            li.appendChild( btn_delete );
-            display_filelist.appendChild( li );
-            count += 1;
-        }
-        display_filelist_count.textContent = count + ' file(s)';
-    }
-}
-function populate_items_by_category(category) {
-    if ( category == APP_INPUT_FILE_GRADES ) {
-        populate_grades();
-    }
-    else if ( category == APP_INPUT_FILE_OCN_CLIP_LIST ) {
-        populate_ocn_clips();
-    }
-    else {
-        return;
-    }
-}
-function populate_ocn_clips() {
-    var tbody = document.getElementById('app_ocn_clips_tbody');
-    // Clear the table on each update to keep it current
-    tbody.innerHTML = '';
-
-    // Then work.
-    app.ocn_clips.forEach( (ocn_clip) => {
-        var row = tbody.insertRow(-1);
-        // OCN Clip Name
-        var cell_source_file_name = row.insertCell(0);
-        cell_source_file_name.textContent = ocn_clip.name;
-        // OCN Clip Duration
-        var cell_duration = row.insertCell(1);
-        var dur = ocn_clip.duration;
-        if ( dur.hours <= 0 ) {
-        	cell_duration.textContent = `${dur.minutes}m ${dur.seconds}s`;
-        }
-        else {
-            cell_duration.textContent = dur;
-        }
-
-        // OCN Clip Start TC
-        var cell_start_tc = row.insertCell(-1);
-        cell_start_tc.textContent = ocn_clip.start_tc;
-        var cell_matched_grade_identifier = row.insertCell(-1);
-        var cell_matched_grade_scene = row.insertCell(-1);
-        var cell_matched_grade_take = row.insertCell(-1);
-        var cell_matched_grade_sop = row.insertCell(-1);
-        var cell_matched_grade_sat = row.insertCell(-1);
-        // Matched grades
-        if ( ocn_clip['matched_grades'].length > 0 ) {
-            var matched_grade = ocn_clip['matched_grades'][0];
-            cell_matched_grade_identifier.textContent = matched_grade.identifier;
-            cell_matched_grade_scene.textContent = matched_grade.metadata.scene ?? '';
-            cell_matched_grade_take.textContent = matched_grade.metadata.take ?? '';
-            cell_matched_grade_sop.textContent = matched_grade.sop_as_string;
-            cell_matched_grade_sat.textContent = matched_grade.sat_as_string;
-        }
-        else {
-            cell_matched_grade_identifier.textContent = '';
-        }
-    });
-}
-function populate_grades() {
-    var tbody = document.getElementById('app_grades_tbody');
-    // Clear the table on each update to keep it current
-    tbody.innerHTML = '';
-
-    // Then work.
-    app.grades.forEach( (grade) => {
-        var row = tbody.insertRow(-1);
-        var cell_grade_name = row.insertCell(0);
-        var cell_start_tc = row.insertCell(-1);
-        var cell_scene = row.insertCell(-1);
-        var cell_take = row.insertCell(-1);
-        var cell_sop = row.insertCell(-1);
-        var cell_sat = row.insertCell(-1);
-        cell_grade_name.textContent = grade.identifier;
-        cell_start_tc.textContent = grade.metadata.start_tc ?? '';
-        cell_scene.textContent = grade.metadata.scene ?? '';
-        cell_take.textContent = grade.metadata.take ?? '';
-        cell_sop.textContent = grade.sop_as_string;
-        cell_sat.textContent = grade.sat_as_string;
-    });
-}
-// LIST OUTPUT
-function output_ocn_clips_to_file(file_type) {
-    var output_clips = [];
-    var output_grades = [];
-    var output_files = [];
-    app.ocn_clips.forEach( (ocn_clip) => {
-        // Save
-        output_clips.push(ocn_clip);
-        // Gather the grades in a separate list, to be used by CCC export
-        // which doesn't require any knowledge of ocn clips
-        if ( ocn_clip.matched_grades.length > 0 ) {
-            // Only the first grade if multiple.
-            var grade = ocn_clip.matched_grades[0]; 
-            // Assign the matched OCN clip name as the identifier for export.
-            grade.set_export_identifier(ocn_clip.name);
-        	output_grades.push(grade);
-        }
-    });
-    if ( file_type == 'ccc' ) {
-        output_files.push( app.export_ccc_cdl(output_grades, 'ccc') );
-    }
-    else if ( file_type == 'cdl-single' ) {
-        // Output all grades into a single ColorDecisionList with multiple Corrections
-        output_files.push( app.export_ccc_cdl(output_grades, 'cdl') );
-    }
-    else if ( file_type == 'cdl-multiple' ) {
-        // Output grades into one ColorDecisionList per ColorCorrection
-        output_grades.forEach( (grade) => {
-            output_files.push( app.export_ccc_cdl([ grade ], 'cdl') );
-        });
-    }
-    else if ( file_type == 'edl+ccc' ) {
-        var edl = app.export_edl(output_clips, paired_ccc=true);
-        output_files.push( edl );
-        if ( edl.grades ) {
-        	output_files.push( app.export_ccc_cdl(edl.grades, 'ccc', use_ccc_identifier=true) );
-        }
-    }
-    else if ( file_type == 'edl' ) {
-        output_files.push( app.export_edl(output_clips) );
-    }
-    return output_files;
-}
-function output_grades_to_file(file_type) {
-    var output_files = [];
-    if ( file_type == 'ccc' ) {
-        output_files.push( app.export_ccc_cdl(app.grades, 'ccc') );
-    }
-    else if ( file_type == 'cdl-single' ) {
-        // Output all grades into a single ColorDecisionList with multiple Corrections
-        output_files.push( app.export_ccc_cdl(app.grades, 'cdl') );
-    }
-    else if ( file_type == 'cdl-multiple' ) {
-        // Output grades into one ColorDecisionList per ColorCorrection
-        app.grades.forEach( (grade) => {
-            output_files.push( app.export_ccc_cdl([ grade ], 'cdl') );
-        });
-    }
-    return output_files;
-}
-
 
 // EVENTS
 function event_read_files_from_user_input(e, files) {
@@ -583,11 +632,11 @@ function event_read_files_from_user_input(e, files) {
     var contenttype = e.target.dataset.contenttype;
     if ( contenttype == 'ocn' ) {
         input_function = app.input_file_ocn.bind(app);
-        update_table_function = populate_ocn_clips;
+        update_table_function = app.populate_ocn_clips.bind(app);
     }
     else if ( contenttype == 'grades' ) {
         input_function = app.input_file_grades.bind(app);
-        update_table_function = populate_grades;
+        update_table_function = app.populate_grades.bind(app);
     }
     // Clear any previous warning
     user_input_warnings_clear_all();
@@ -607,24 +656,27 @@ function event_remove_items_by_type(e) {
     var contenttype = e.target.dataset.contenttype;
     if ( contenttype == 'grades' ) {
         // Delete all
-        app.delete_items(app.grades, APP_INPUT_FILE_GRADES);
+        app.delete_items_all(APP_GRADE);
     }
     else if ( contenttype == 'ocn' ) {
         // Delete all
-        app.delete_items(app.ocn_clips, APP_INPUT_FILE_OCN_CLIP_LIST);
+        app.delete_items_all(APP_OCN_CLIP);
     }
 }
-function event_match_auto_match_grades(e) {
+function event_grades_match_auto(e) {
     app.match_grades_to_ocn_auto();
+}
+function event_grades_match_clear_all(e) {
+    app.clear_matches_all();
 }
 function event_request_output_file_all(e) {
     var file_type = e.target.dataset.outputfiletype;
     var input_type = e.target.dataset.inputtype;
     if ( input_type == 'clips' ) {
-        var output_files = output_ocn_clips_to_file(file_type);
+        var output_files = app.output_ocn_clips_to_file(file_type);
     }
     else if ( input_type == 'grades' ) {
-        var output_files = output_grades_to_file(file_type);
+        var output_files = app.output_grades_to_file(file_type);
     }
     console.log('Output files:', output_files);
     output_files.forEach( (file) => {
@@ -680,8 +732,10 @@ app_input_grades_filepicker.addEventListener('change', event_read_files_selected
 app_input_grades_filelist_removeall.addEventListener('click', event_remove_items_by_type, false);
 
 // MATCH
-const app_match_btn_auto_match = document.getElementById('app_match_btn_auto_match');
-app_match_btn_auto_match.addEventListener('click', event_match_auto_match_grades, false);
+const app_match_btn_match_auto = document.getElementById('app_match_btn_match_auto');
+app_match_btn_match_auto.addEventListener('click', event_grades_match_auto, false);
+const app_match_btn_match_clear_all = document.getElementById('app_match_btn_match_clear_all');
+app_match_btn_match_clear_all.addEventListener('click', event_grades_match_clear_all, false);
 
 // OUTPUTS
 const app_output_btn_ocn_clips = document.getElementsByClassName('app_output_btn_ocn_clips');

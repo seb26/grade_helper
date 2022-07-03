@@ -14,7 +14,10 @@
                     <form data-contenttype="ocn">
                         <label for="app_input_ocn_filepicker" class="form-label">
                             <div>Select or drag & drop here.</div>
-                            <div>Accepted: <code>.ale</code></div>
+                            <div>Accepted:
+                                <span class="badge rounded-pill text-bg-light">ALE</span>
+                                <span class="badge rounded-pill text-bg-light">CSV</span>
+                            </div>
                         </label>
                         <input type="file" class="form-control" id="app_input_ocn_filepicker" data-contenttype="ocn" multiple>
                         <div class="alert alert-warning input_file_warning" role="alert" id="app_input_ocn_warning" style="display:none;"></div>
@@ -26,7 +29,7 @@
                 </div>
                 <div class="filelist_toolbuttons">
                     <div id="app_input_ocn_filelist_count" class="btn btn-outline-dark disabled">0 file(s)</div>
-                    <div id="app_input_ocn_filelist_removeall" class="btn btn-outline-primary" data-contenttype="ocn">Remove all</div>
+                    <div id="app_input_ocn_filelist_removeall" class="btn btn-outline-danger" data-contenttype="ocn">Remove all</div>
                 </div>
 
             </div>
@@ -36,7 +39,15 @@
                 <h3>Add grades</h3>
                 <div id="app_input_grades_droparea" class="droparea w-50">
                     <form data-contenttype="grades">
-                        <label for="app_input_grades_filepicker" class="form-label">Select a file, or drop on top here:</label>
+                        <label for="app_input_grades_filepicker" class="form-label">
+                        	<div>Select or drag & drop here.</div>
+                            <div>Accepted:
+                                <span class="badge rounded-pill text-bg-light">EDL</span>
+                                <span class="badge rounded-pill text-bg-light">CCC</span>
+                                <span class="badge rounded-pill text-bg-light">CDL</span>
+                                <span class="badge rounded-pill text-bg-light">CSV</span>
+                            </div>
+                        </label>
                         <input type="file" class="form-control" id="app_input_grades_filepicker" data-contenttype="grades" multiple>
                         <div class="alert alert-warning input_file_warning" role="alert" id="app_input_grades_warning" style="display:none;"></div>
                     </form>
@@ -47,13 +58,14 @@
                 </div>
                 <div class="filelist_toolbuttons">
                     <div id="app_input_grades_filelist_count" class="btn btn-outline-dark disabled">0 file(s)</div>
-                    <div id="app_input_grades_filelist_removeall" class="btn btn-outline-primary" data-contenttype="grades">Remove all</div>
+                    <div id="app_input_grades_filelist_removeall" class="btn btn-outline-danger" data-contenttype="grades">Remove all</div>
                 </div>
             </div>
         </div>
         <div class="row g-0">
             <div class="col m-2">
-            	<div id="app_match_btn_auto_match" class="btn btn-primary" data-contenttype="grades">Auto match</div>
+            	<div id="app_match_btn_match_auto" class="btn btn-primary">Auto match</div>
+            	<div id="app_match_btn_match_clear_all" class="btn btn-outline-secondary">Clear matches</div>
             </div>
         </div>
 
@@ -66,6 +78,7 @@
                             <th>Name</th>
                             <th>Duration</th>
                             <th>Start TC</th>
+                            <th class="col-graded"> </th>
                             <th class="col-graded">Matched grade</th>
                             <th class="col-graded">Scene</th>
                             <th class="col-graded">Take</th>
@@ -102,8 +115,8 @@
             	<h3>Export from clips</h3>
                     <div class="row">
                         <div class="col d-flex export-buttons">
-                        	<div class="btn btn-outline-primary me-2">ALE</div>
-                        	<div class="btn btn-outline-primary me-2">CSV</div>
+                        	<div class="btn btn-outline-secondary me-2 disabled">ALE</div>
+                        	<div class="btn btn-outline-secondary me-2 disabled">CSV</div>
                             <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="edl">EDL</div>
                             <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="edl+ccc">Paired EDL+CCC</div>
                             <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="ccc">CCC</div>
@@ -119,8 +132,8 @@
                         <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="ccc">CCC</div>
                         <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="cdl-multiple">CDLs</div>
                         <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="cdl-single">CDL (single)</div>
-                        <div class="btn btn-outline-secondary me-2">ALE</div>
-                        <div class="btn btn-outline-secondary me-2">CSV</div>
+                        <div class="btn btn-outline-secondary me-2 disabled">ALE</div>
+                        <div class="btn btn-outline-secondary me-2 disabled">CSV</div>
                     </div>
                 </div>
             </div>
