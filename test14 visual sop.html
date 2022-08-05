@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="grade_helper/resources/bootstrap-5.2.0-beta1-dist/bootstrap.min.css">
+    <style type="text/css">
+        .grade {
+
+            border: 1px solid black;
+            font-family: monospace;
+        }
+        .grade-cell {
+            padding: 1rem;
+        }
+        .grade-cell-r {
+        }
+        .grade-cell-g {
+        }
+        .grade-cell-b {
+        }
+        .grade-cell-slope {
+            background-color: rgba(139,125,121,1);
+            height: ;
+        }
+        .grade-cell-offset {
+            background-color: rgba(117,130,134,1);
+        }
+        .grade-cell-power {
+            background-color: rgba(128,128,128,1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Test visual sop</h3>
+        <pre>
+            (lg) offset blue slope orange
+		<Slope>1.08651 0.97968 0.94656</Slope>
+    	<Offset>-0.04047 0.00953 0.02475</Offset>
+    	<Power>1.00000 1.00000 1.00000</Power>
+        (1.000)
+
+        SOLID WHITE (255,255,255) + slope above: = 255,250,235
+        GREY (128,128,128) + slope above: 140,126,118
+        	+ offset above: 140,122,108
+
+        (128,128,128)
+        slope
+        r: 0.543255 = 138.53
+        g: 0.48984 = 124.89
+        b: 0.47328 = 120.68
+
+        offset
+        r: 0.45953 = 117
+        g: 0.50953 = 130
+        b: 0.52475 = 134
+    	</pre>
+        
+
+        <div class="d-flex flex-row grade ">
+            <div class="grade-cell grade-cell-hash">d8f</div>
+            <div class="grade-cell grade-cell-offset grade-cell-r">-0.04</div>
+            <div class="grade-cell grade-cell-offset grade-cell-g">&nbsp;0.01</div>
+            <div class="grade-cell grade-cell-offset grade-cell-b">&nbsp;0.03</div>
+            &nbsp;
+            <div class="grade-cell grade-cell-power grade-cell-r">&nbsp;1.00</div>
+            <div class="grade-cell grade-cell-power grade-cell-g">&nbsp;1.00</div>
+            <div class="grade-cell grade-cell-power grade-cell-b">&nbsp;1.00</div>
+            &nbsp;
+            <div class="grade-cell grade-cell-slope grade-cell-r">&nbsp;1.08</div>
+            <div class="grade-cell grade-cell-slope grade-cell-g">&nbsp;0.98</div>
+            <div class="grade-cell grade-cell-slope grade-cell-b">&nbsp;0.94</div>
+            &nbsp;
+            <div class="grade-cell grade-cell-sat">&nbsp;1.00</div>
+        </div>
+    </div>
+</body>
+</html>

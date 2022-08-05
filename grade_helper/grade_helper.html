@@ -6,138 +6,165 @@
     </head>
     <body>
         
-    	<div class="row g-0">
-            <!-- INPUT OCN CLIPS -->
-            <div class="col section input_ocn">
-                <h3>Add clips</h3>
-                <div id="app_input_ocn_droparea" class="droparea w-50">
-                    <form data-contenttype="ocn">
-                        <label for="app_input_ocn_filepicker" class="form-label">
-                            <div>Select or drag & drop here.</div>
-                            <div>Accepted:
-                                <span class="badge rounded-pill text-bg-light">ALE</span>
-                                <span class="badge rounded-pill text-bg-light">CSV</span>
+        <div class="container-fluid">
+        	<div class="row">
+                <!-- INPUT OCN CLIPS -->
+                <div class="col section input_ocn">
+                    <h3>Add clips</h3>
+                    <div id="app_input_ocn_droparea" class="droparea w-50">
+                        <form data-contenttype="ocn">
+                            <label for="app_input_ocn_filepicker" class="form-label">
+                                <div>Select or drag & drop here.</div>
+                                <div>Accepted:
+                                    <span class="badge rounded-pill text-bg-light">ALE</span>
+                                    <span class="badge rounded-pill text-bg-light">CSV</span>
+                                </div>
+                            </label>
+                            <input type="file" class="form-control" id="app_input_ocn_filepicker" data-contenttype="ocn" multiple>
+                            <div class="alert alert-warning input_file_warning" role="alert" id="app_input_ocn_warning" style="display:none;"></div>
+                        </form>
+                    </div>
+                    <div class="input_ocn_filelist my-2 w-75">
+                        <ul class="list-group filelist_group" id="app_input_ocn_filelist">
+                        </ul>
+                    </div>
+                    <div class="filelist_toolbuttons">
+                        <div id="app_input_ocn_filelist_count" class="btn btn-outline-dark disabled">0 file(s)</div>
+                        <div id="app_input_ocn_filelist_removeall" class="btn btn-outline-danger" data-contenttype="ocn">Remove all</div>
+                    </div>
+
+                </div>
+
+                <!-- INPUT GRADES -->
+                <div class="col section app_input_grades">
+                    <h3>Add grades</h3>
+                    <div id="app_input_grades_droparea" class="droparea w-50">
+                        <form data-contenttype="grades">
+                            <label for="app_input_grades_filepicker" class="form-label">
+                            	<div>Select or drag & drop here.</div>
+                                <div>Accepted:
+                                    <span class="badge rounded-pill text-bg-light">EDL</span>
+                                    <span class="badge rounded-pill text-bg-light">CCC</span>
+                                    <span class="badge rounded-pill text-bg-light">CDL</span>
+                                    <span class="badge rounded-pill text-bg-light">CSV</span>
+                                </div>
+                            </label>
+                            <input type="file" class="form-control" id="app_input_grades_filepicker" data-contenttype="grades" multiple>
+                            <div class="alert alert-warning input_file_warning" role="alert" id="app_input_grades_warning" style="display:none;"></div>
+                        </form>
+                    </div>
+                    <div class="filelist my-2 w-75">
+                        <ul class="list-group" id="app_input_grades_filelist">
+                        </ul>
+                    </div>
+                    <div class="filelist_toolbuttons">
+                        <div id="app_input_grades_filelist_count" class="btn btn-outline-dark disabled">0 file(s)</div>
+                        <div id="app_input_grades_filelist_removeall" class="btn btn-outline-danger" data-contenttype="grades">Remove all</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col m-2">
+                	<div id="app_match_btn_match_auto" class="btn btn-primary">Auto match</div>
+                	<div id="app_match_btn_match_clear_all" class="btn btn-outline-secondary">Clear matches</div>
+                </div>
+            </div>
+
+        	<div class="row">
+                <div class="col section clips_table">
+                    <h3>Clips table</h3>
+                    <table class="table items_table" id="app_ocn_clips_table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Duration</th>
+                                <th>Start TC</th>
+                                <th class="col-graded"> </th>
+                                <th class="col-graded">Matched grade</th>
+                                <th class="col-graded">Scene</th>
+                                <th class="col-graded">Take</th>
+                                <th class="col-graded">SOP</th>
+                                <th class="col-graded">SAT</th>
+                            </tr>
+                        </thead>
+                        <tbody id="app_ocn_clips_tbody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col section grades_table">
+                    <h3>Grades</h3>
+                    <table class="table items_table" id="app_grades_table">
+                        <thead>
+                            <tr>
+                                <th class="col-graded">Grade name</th>
+                                <th>Start TC</th>
+                                <th>Scene</th>
+                                <th>Take</th>
+                                <th>SOP</th>
+                                <th>SAT</th>
+                            </tr>
+                        </thead>
+                        <tbody id="app_grades_tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col section export">
+                	<h3>Export from clips</h3>
+                    	<div class="row my-3">
+                            <div class="col">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-auto">
+                                		<label for="app_output_filename_ocn_clips" class="form-text">Filename prefix</span>
+                                    </div>
+                                    <div class="col-auto w-75">
+                                		<input class="form-control" type="text" id="app_output_filename_ocn_clips" placeholder="gradehelper_20220717_clips">
+                                    </div>
+                                </div>
                             </div>
-                        </label>
-                        <input type="file" class="form-control" id="app_input_ocn_filepicker" data-contenttype="ocn" multiple>
-                        <div class="alert alert-warning input_file_warning" role="alert" id="app_input_ocn_warning" style="display:none;"></div>
-                    </form>
-                </div>
-                <div class="input_ocn_filelist my-2 w-75">
-                    <ul class="list-group filelist_group" id="app_input_ocn_filelist">
-                    </ul>
-                </div>
-                <div class="filelist_toolbuttons">
-                    <div id="app_input_ocn_filelist_count" class="btn btn-outline-dark disabled">0 file(s)</div>
-                    <div id="app_input_ocn_filelist_removeall" class="btn btn-outline-danger" data-contenttype="ocn">Remove all</div>
-                </div>
-
-            </div>
-
-            <!-- INPUT GRADES -->
-            <div class="col section app_input_grades">
-                <h3>Add grades</h3>
-                <div id="app_input_grades_droparea" class="droparea w-50">
-                    <form data-contenttype="grades">
-                        <label for="app_input_grades_filepicker" class="form-label">
-                        	<div>Select or drag & drop here.</div>
-                            <div>Accepted:
-                                <span class="badge rounded-pill text-bg-light">EDL</span>
-                                <span class="badge rounded-pill text-bg-light">CCC</span>
-                                <span class="badge rounded-pill text-bg-light">CDL</span>
-                                <span class="badge rounded-pill text-bg-light">CSV</span>
+                    	</div>
+                        <div class="row">
+                            <div class="col d-flex export-buttons">
+                            	<div class="btn btn-outline-secondary me-2 disabled">ALE</div>
+                            	<div class="btn btn-outline-secondary me-2 disabled">CSV</div>
+                                <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="edl">EDL</div>
+                                <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="edl+ccc">Paired EDL+CCC</div>
+                                <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="ccc">CCC</div>
+                                <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="cdl-multiple">CDLs</div>
+                                <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="cdl-single">CDL (single)</div>
                             </div>
-                        </label>
-                        <input type="file" class="form-control" id="app_input_grades_filepicker" data-contenttype="grades" multiple>
-                        <div class="alert alert-warning input_file_warning" role="alert" id="app_input_grades_warning" style="display:none;"></div>
-                    </form>
+                        </div>
                 </div>
-                <div class="filelist my-2 w-75">
-                    <ul class="list-group" id="app_input_grades_filelist">
-                    </ul>
-                </div>
-                <div class="filelist_toolbuttons">
-                    <div id="app_input_grades_filelist_count" class="btn btn-outline-dark disabled">0 file(s)</div>
-                    <div id="app_input_grades_filelist_removeall" class="btn btn-outline-danger" data-contenttype="grades">Remove all</div>
-                </div>
-            </div>
-        </div>
-        <div class="row g-0">
-            <div class="col m-2">
-            	<div id="app_match_btn_match_auto" class="btn btn-primary">Auto match</div>
-            	<div id="app_match_btn_match_clear_all" class="btn btn-outline-secondary">Clear matches</div>
-            </div>
-        </div>
 
-    	<div class="row g-0">
-            <div class="col section clips_table">
-                <h3>Clips table</h3>
-                <table class="table" id="app_ocn_clips_table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Duration</th>
-                            <th>Start TC</th>
-                            <th class="col-graded"> </th>
-                            <th class="col-graded">Matched grade</th>
-                            <th class="col-graded">Scene</th>
-                            <th class="col-graded">Take</th>
-                            <th class="col-graded">SOP</th>
-                            <th class="col-graded">SAT</th>
-                        </tr>
-                    </thead>
-                    <tbody id="app_ocn_clips_tbody">
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="col section grades_table">
-                <h3>Grades</h3>
-                <table class="table" id="app_grades_table">
-                    <thead>
-                        <tr>
-                            <th class="col-graded">Grade name</th>
-                            <th>Start TC</th>
-                            <th>Scene</th>
-                            <th>Take</th>
-                            <th>SOP</th>
-                            <th>SAT</th>
-                        </tr>
-                    </thead>
-                    <tbody id="app_grades_tbody">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="row g-0">
-            <div class="col section export">
-            	<h3>Export from clips</h3>
+                <div class="col section export">
+                    <h3>Export grades</h3>
                     <div class="row">
                         <div class="col d-flex export-buttons">
-                        	<div class="btn btn-outline-secondary me-2 disabled">ALE</div>
-                        	<div class="btn btn-outline-secondary me-2 disabled">CSV</div>
-                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="edl">EDL</div>
-                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="edl+ccc">Paired EDL+CCC</div>
-                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="ccc">CCC</div>
-                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="cdl-multiple">CDLs</div>
-                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='clips' data-outputfiletype="cdl-single">CDL (single)</div>
+                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="ccc">CCC</div>
+                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="cdl-multiple">CDLs</div>
+                            <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="cdl-single">CDL (single)</div>
+                            <div class="btn btn-outline-secondary me-2 disabled">ALE</div>
+                            <div class="btn btn-outline-secondary me-2 disabled">CSV</div>
                         </div>
                     </div>
+                </div>
+
             </div>
-            <div class="col section export">
-                <h3>Export grades</h3>
-                <div class="row">
-                    <div class="col d-flex export-buttons">
-                        <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="ccc">CCC</div>
-                        <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="cdl-multiple">CDLs</div>
-                        <div class="btn btn-outline-primary me-2 app_output_btn_ocn_clips" data-inputtype='grades' data-outputfiletype="cdl-single">CDL (single)</div>
-                        <div class="btn btn-outline-secondary me-2 disabled">ALE</div>
-                        <div class="btn btn-outline-secondary me-2 disabled">CSV</div>
+
+            <div class="row">
+                <div class="col section log">
+                	<h3>Log</h3>
+                    <div class="log-output" id="app_log_output">
                     </div>
                 </div>
             </div>
+
         </div>
+
+
 
 
     <script type="text/javascript" src="../lib/uuidv4.min.js"></script>

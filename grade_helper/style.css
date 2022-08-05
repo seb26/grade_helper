@@ -31,10 +31,21 @@
 
 .clips_table {
     background: #aaa;
+
+    max-height: 40vh;
+    overflow-y: scroll;
 }
 
 .grades_table {
     background: #9ec5fe;
+
+    max-height: 40vh;
+    overflow-y: scroll;
+}
+
+.items_table td {
+    font-size: 75%;
+    font-family: var(--bs-font-monospace);
 }
 
 th.col-graded {
@@ -50,5 +61,13 @@ td.col-graded {
 
 
 .export {
+    background: #ddd;
+}
+
+.log {
     background: #eee;
+}
+
+.log-output {
+    font-family: monospace;
 }

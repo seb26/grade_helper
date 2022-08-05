@@ -37,6 +37,7 @@ pseudocode logic
 // GLOBAL SETTINGS - USER
 const APP_OCN_CLIP_LIST_IGNORE_FILE_EXTENSIONS = [ 'xml', 'ale', 'bin' ]; /* We know these are not valid clips */
 const APP_DEFAULT_FPS_UNSPECIFIED = 25;
+const APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES = 2;
 
 const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', 'File Name', ]; /* In order of selection */
 const ALE_COL_NAMES_START_TIMECODE = [ 'Start', 'TC Start', 'StartTC', 'Start TC', ];
@@ -145,7 +146,7 @@ class App {
                 else {
                     // Apply the default FPS
                     rough_clip.fps = APP_DEFAULT_FPS_UNSPECIFIED;
-                    console.log(
+                    user_log(
                     	`input_file_ocn(): ${rough_clip.name}: no FPS value found, using the app default (${rough_clip.fps}).`
 	                );
                 }
@@ -158,7 +159,7 @@ class App {
             // Ignore these known file extensions because they are never true OCN clips
             var file_ext_from_clip_name = rough_clip.name.slice((rough_clip.name.lastIndexOf('.') - 1 >>> 0) + 2);
             if ( APP_OCN_CLIP_LIST_IGNORE_FILE_EXTENSIONS.includes(file_ext_from_clip_name) ) {
-                console.log(
+                user_log(
                     `input_file_ocn(): Ignoring ${rough_clip.name} (known file extension).`
                 );
                 return;
@@ -166,7 +167,7 @@ class App {
         	// If for some reason this item has no Name, Start TC, End TC, FPS,
             // Then it is not truly a clip.
             if ( !( rough_clip.name && rough_clip.start_tc && rough_clip.end_tc && rough_clip.fps ) ) {
-                console.log(
+                user_log(
                     `input_file_ocn(): Could not find all valid attributes (name, start tc, end tc, fps) from this item: ${clip_rough.name} (${filename}, index ${index})`
                 );
                 return;
@@ -341,8 +342,8 @@ class App {
                 cell_matched_grade_identifier.textContent = matched_grade.identifier;
                 cell_matched_grade_scene.textContent = matched_grade.metadata.scene ?? '';
                 cell_matched_grade_take.textContent = matched_grade.metadata.take ?? '';
-                cell_matched_grade_sop.textContent = matched_grade.sop_as_string;
-                cell_matched_grade_sat.textContent = matched_grade.sat_as_string;
+                cell_matched_grade_sop.textContent = matched_grade.get_sop_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
+                cell_matched_grade_sat.textContent = matched_grade.get_sat_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
             }
             else {
                 cell_matched_grade_identifier.textContent = '';
@@ -366,8 +367,8 @@ class App {
             cell_start_tc.textContent = grade.metadata.start_tc ?? '';
             cell_scene.textContent = grade.metadata.scene ?? '';
             cell_take.textContent = grade.metadata.take ?? '';
-            cell_sop.textContent = grade.sop_as_string;
-            cell_sat.textContent = grade.sat_as_string;
+            cell_sop.textContent = grade.get_sop_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
+            cell_sat.textContent = grade.get_sat_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
         });
     }
     delete_items_from_input_file(category, file_object) {
@@ -519,11 +520,11 @@ class App {
     output_grades_to_file(file_type) {
         var output_files = [];
         if ( file_type == 'ccc' ) {
-            output_files.push( this.export_ccc_cdl(this.grades, 'ccc') );
+            output_files.push( this.export_ccc_cdl(this.items[APP_GRADE], 'ccc') );
         }
         else if ( file_type == 'cdl-single' ) {
             // Output all grades into a single ColorDecisionList with multiple Corrections
-            output_files.push( this.export_ccc_cdl(this.grades, 'cdl') );
+            output_files.push( this.export_ccc_cdl(this.items[APP_GRADE], 'cdl') );
         }
         else if ( file_type == 'cdl-multiple' ) {
             // Output grades into one ColorDecisionList per ColorCorrection
@@ -595,6 +596,7 @@ class App {
 
 // BROWSER FILE HANDLING
 function read_file_to_string(input_function, file, filename, callback) {
+    user_log('Attempting to read: ' + filename);
     var filelist;
     let reader = new FileReader();
     reader.readAsBinaryString( file );
@@ -678,13 +680,24 @@ function event_request_output_file_all(e) {
     else if ( input_type == 'grades' ) {
         var output_files = app.output_grades_to_file(file_type);
     }
-    console.log('Output files:', output_files);
+    user_log('Output files:', output_files);
     output_files.forEach( (file) => {
         if ( file.data ) {
             var timestamp = Date.now();
             browser_output_file_as_download( file.data, 'your name here' + '.' + file.file_ext );
         }
     });
+}
+
+// USER LOG
+function user_log(text) {
+    var log = document.getElementById('app_log_output');
+    var line = document.createElement('div');
+    line.textContent = text;
+    log.append(line);
+    // And also send it to console.
+    console.log(text);
+    return;
 }
 
 // WARNINGS

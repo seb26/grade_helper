@@ -1,12 +1,17 @@
 ## Bugs
-* Importing a clip that has no valid items will still appear in Input Filelist even though it is useless
-    * Another way to show user that their file has 0 valid items? Warning?
+
 * Pressing download 'CDLs' will download an empty file, when there are no matching grades at all.
 
-* Import EDL - isn't perfect - trouble handling plain EDLs that have no comment lines
 
 ## Currently working on
 * Input files as ALE (e.g. Scratch ALE from LiveGrade)
+
+* Visual display of grades
+    * Calculate colour for slope, offset, power
+    * Calculate master level for slope, offset, power
+    * For each grade, calculate grade "hash" e.g. [d8fc0e] = to show that two grades are identical
+    	* However it should not be 6 hexadecimal digits, to avoid implying that the grade creates a hex #ffffff colour
+        * Could potentially be in SEQUENCE, aka 1st unique grade = "1" and 2nd unique grade ="2" in order of their position within the set of grades
 
 
 ## Functionality
