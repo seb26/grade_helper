@@ -1,0 +1,11 @@
+Heading
+FIELD_DELIM	TABS
+VIDEO_FORMAT	CUSTOM
+AUDIO_FORMAT	48kHz
+FPS	24
+
+Column
+Name	Source File	Clip	Duration	Tracks	Start	End	FPS	Original_video	Audio_format	Audio_sr	Audio_bit	Frame_width	Frame_height	Uuid	Sup_version	Exposure_index	Gamma	White_balance	Cc_shift	Look_name	Look_burned_in	Sensor_fps	Shutter_angle	Manufacturer	Camera_model	Camera_sn	Camera_id	Camera_index	Project_fps	Storage_sn	Production	Cinematographer	Operator	Director	Location	Company	User_info1	User_info2	Date_camera	Time_camera	Reel_name	Scene	Take	ASC_SAT	ASC_SOP	Look_user_lut	Lut_file_name	Nd_filterdensity	Focus_distance_unit	Lens_sn	Lens_type	Image_orientation	Image_sharpness	Image_detail	Image_denoising
+
+Data
+A018C001_220609_R111	A018C001_220609_R111.mxf	C001	00:00:57:09	VA1A2A3A4A5	17:32:22:18	17:33:20:03	24	ARRIRAW (2202p)	WAVE	48	24	3424	2202	15B84B78-E81A-11	6.01.01	400	LOG-C	5600	+0	emb_seb_v1.aml	No	24.000	172.8	ARRI	ALEXA Mini	0021333	R111	A	24.000	180802300262	EMBERS	ZEKE COLLINS	ZC	ALEXIS OROSA		EMBERS			20220609	17h32m07s	A018R111			1.000	(1.000 1.000 1.000)(0.000 0.000 0.000)(1.000 1.000 1.000)	Yes		0	Metric	0		0	0	0	0

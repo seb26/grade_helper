@@ -50,6 +50,10 @@ const ALE_COL_NAMES_DURATION = [ 'Duration', 'Clip Duration', ];
 const APP_GRADE = Symbol('APP_GRADE');
 const APP_OCN_CLIP = Symbol('APP_OCN_CLIP');
 
+// FORMATTING
+const pluralise = (count, noun, suffix = 's') =>
+  `${count} ${noun}${count !== 1 ? suffix : ''}`;
+
 class Clip {
     constructor(clip_attribs = {
         name: undefined,
@@ -239,12 +243,14 @@ class App {
             var input_files = this.input_files[APP_GRADE];
             var display_filelist = document.getElementById('app_input_grades_filelist');
             var display_filelist_count = document.getElementById('app_input_grades_filelist_count');
+            var display_filelist_word = 'grade';
         }
         else if ( category == APP_OCN_CLIP ) {
             var items_all = this.items[APP_OCN_CLIP];
             var input_files = this.input_files[APP_OCN_CLIP];
             var display_filelist = document.getElementById('app_input_ocn_filelist');
             var display_filelist_count = document.getElementById('app_input_ocn_filelist_count');
+            var display_filelist_word = 'clip';
         }
         else {
             throw new Error('populate_filelist: unrecognised filelist type: ', category);
@@ -264,23 +270,22 @@ class App {
                 name.textContent = input_file_obj.filename;
                 var eventcount = document.createElement('span');
                 eventcount.classList.add('filelist_item_eventcount');
-                eventcount.textContent = input_file_obj.eventcount;
-                var btn_delete = document.createElement('div');
-                btn_delete.classList.add('btn', 'btn-outline-primary');
+                eventcount.textContent = '(' + pluralise(input_file_obj.eventcount, display_filelist_word) + ')';
+                var btn_delete = document.createElement('a');
                 btn_delete.classList.add('filelist_item_delete');
                 btn_delete.dataset.file_id = input_file_obj.id;
-                btn_delete.textContent = 'delete';
+                btn_delete.textContent = '(remove)';
                 // Event handler for the delete button
                 btn_delete.addEventListener('click', function() {
                     this.delete_items_from_input_file(category, input_file_obj);
                 }.bind(this), false);
-                li.appendChild( name );
                 li.appendChild( eventcount );
                 li.appendChild( btn_delete );
+                li.appendChild( name );
                 display_filelist.appendChild( li );
                 count += 1;
             }
-            display_filelist_count.textContent = count + ' file(s)';
+            display_filelist_count.textContent = ' ' + pluralise(count, 'file');
         }
     }
     populate_items_by_category(category) {
@@ -299,6 +304,7 @@ class App {
         // Clear the table on each update to keep it current
         tbody.innerHTML = '';
         // Then work.
+        var count_ocn_clips_that_had_matching_grades = 0;
         this.items[APP_OCN_CLIP].forEach( (ocn_clip, clip_index) => {
             var row = tbody.insertRow(-1);
             // OCN Clip Name
@@ -325,9 +331,10 @@ class App {
             var cell_matched_grade_sat = row.insertCell(-1);
             // Fill with matched grades
             if ( ocn_clip['matched_grades'].length > 0 ) {
+                count_ocn_clips_that_had_matching_grades += 1;
                 // Clear button
-                var btn_matched_grade_clear = document.createElement('div');
-                btn_matched_grade_clear.classList.add('btn', 'btn-outline-primary');
+                var btn_matched_grade_clear = document.createElement('span');
+                btn_matched_grade_clear.classList.add('link-danger');
                 btn_matched_grade_clear.classList.add('grade_matched_clear');
                 btn_matched_grade_clear.dataset.clip_index = clip_index;
                 btn_matched_grade_clear.textContent = 'x';
@@ -342,13 +349,18 @@ class App {
                 cell_matched_grade_identifier.textContent = matched_grade.identifier;
                 cell_matched_grade_scene.textContent = matched_grade.metadata.scene ?? '';
                 cell_matched_grade_take.textContent = matched_grade.metadata.take ?? '';
-                cell_matched_grade_sop.textContent = matched_grade.get_sop_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
+                cell_matched_grade_sop.textContent = matched_grade.get_sop_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES, false, true);
                 cell_matched_grade_sat.textContent = matched_grade.get_sat_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
             }
             else {
                 cell_matched_grade_identifier.textContent = '';
             }
         });
+        // Update the status info
+        var match_statusinfo_count_of_matched_grades = document.getElementById('app_match_statusinfo_count_of_matched_grades');
+        match_statusinfo_count_of_matched_grades.innerHTML = count_ocn_clips_that_had_matching_grades + ' matching grades';
+        var ocn_clips_statusinfo = document.getElementById('app_ocn_clips_statusinfo');
+        ocn_clips_statusinfo.innerHTML = pluralise(this.items[APP_OCN_CLIP].length, 'clip');
     }
     populate_grades() {
         var tbody = document.getElementById('app_grades_tbody');
@@ -370,6 +382,9 @@ class App {
             cell_sop.textContent = grade.get_sop_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
             cell_sat.textContent = grade.get_sat_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
         });
+        // Update the status info
+        var grades_statusinfo = document.getElementById('app_grades_statusinfo');
+        grades_statusinfo.innerHTML = pluralise(this.items[APP_GRADE].length, 'grade');
     }
     delete_items_from_input_file(category, file_object) {
         // Repopulate items that don't match the ID - aka they are removed
@@ -506,10 +521,10 @@ class App {
             });
         }
         else if ( file_type == 'edl+ccc' ) {
-            var edl = this.export_edl(output_clips, paired_ccc=true);
+            var edl = this.export_edl(output_clips, true);
             output_files.push( edl );
             if ( edl.grades ) {
-            	output_files.push( this.export_ccc_cdl(edl.grades, 'ccc', use_ccc_identifier=true) );
+            	output_files.push( this.export_ccc_cdl(edl.grades, 'ccc', true) );
             }
         }
         else if ( file_type == 'edl' ) {
@@ -572,7 +587,7 @@ class App {
         }
         else {
             clips.forEach( (clip) => {
-                var edl_clip = new Clip(
+                var edl_clip = new EDLClip(
                     clip.name,
                     clip.start_tc,
                     clip.end_tc,
@@ -676,15 +691,20 @@ function event_request_output_file_all(e) {
     var input_type = e.target.dataset.inputtype;
     if ( input_type == 'clips' ) {
         var output_files = app.output_ocn_clips_to_file(file_type);
+        var output_file_prefix = app_output_filename_ocn_clips.value;
     }
     else if ( input_type == 'grades' ) {
         var output_files = app.output_grades_to_file(file_type);
+        var output_file_prefix = app_output_filename_grades.value;
     }
     user_log('Output files:', output_files);
     output_files.forEach( (file) => {
         if ( file.data ) {
-            var timestamp = Date.now();
-            browser_output_file_as_download( file.data, 'your name here' + '.' + file.file_ext );
+            file.size_bytes = file.data.length;
+            file.size = format_bytes(file.size_bytes);
+            file.name = output_file_prefix + '.' + file.file_ext;
+            user_log('\xa0\xa0\xa0\xa0' + file.name + ' (' + file.size + ')');
+            browser_output_file_as_download( file.data, file.name );
         }
     });
 }
@@ -693,7 +713,7 @@ function event_request_output_file_all(e) {
 function user_log(text) {
     var log = document.getElementById('app_log_output');
     var line = document.createElement('div');
-    line.textContent = text;
+    line.textContent = format_time_as_HHMM() + ": " + text;
     log.append(line);
     // And also send it to console.
     console.log(text);
@@ -715,6 +735,35 @@ function user_input_warnings_clear_all() {
     for ( var i = 0; warnings.length > i; i++ ) {
         user_input_warning_clear( warnings[i] );
     }
+}
+
+// FORMATTING
+function format_date_as_YYYYMMDD(date = new Date()) {
+    function padTo2Digits(num) {
+        return num.toString().padStart(2, '0');
+    }
+    return [
+        date.getFullYear(),
+        padTo2Digits(date.getMonth() + 1),
+        padTo2Digits(date.getDate()),
+    ].join('');
+}
+function format_time_as_HHMM(date = new Date()) {
+    function padTo2Digits(num) {
+        return num.toString().padStart(2, '0');
+    }
+    return [
+        padTo2Digits(date.getHours()),
+        padTo2Digits(date.getMinutes()),
+    ].join(':');
+}
+function format_bytes(bytes, decimals) {
+   if (bytes == 0) return '0 Bytes';
+   var k = 1024,
+       dm = decimals || 2,
+       sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'],
+       i = Math.floor(Math.log(bytes) / Math.log(k));
+   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
 
@@ -755,6 +804,12 @@ const app_output_btn_ocn_clips = document.getElementsByClassName('app_output_btn
 for ( var i = 0; app_output_btn_ocn_clips.length > i; i++ ) {
     app_output_btn_ocn_clips[i].addEventListener('click', event_request_output_file_all, false);
 }
+
+// OUTPUT FILE PREFIX - default
+const app_output_filename_ocn_clips = document.getElementById('app_output_filename_ocn_clips');
+const app_output_filename_grades = document.getElementById('app_output_filename_grades');
+app_output_filename_ocn_clips.value = 'grade_helper_' + format_date_as_YYYYMMDD();
+app_output_filename_grades.value = 'grade_helper_' + format_date_as_YYYYMMDD();
 
 // EVENT HANDLERS
 // Prevent default drag behaviors
