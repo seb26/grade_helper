@@ -1,43 +1,7 @@
-/*
-const EditDecisionList = require('./node_modules/edl-genius');
-const Timecode = require('timecode-boss');
-*/
-
-/*
-pseudocode logic
-
-- add OCN clip information
-	camera ALE, yoyotta ALE, yoyotta CSV, resolve ALE
-
-- add grades
-	CDL files (multiple), livegrade CSV
-
-- now we have:
-> list of clips
-> list of grades
-
-- [auto match grades]
-	for each grade:
-		for each OCN clip:
-			// Match by timecode
-			if ( OCN_start < grade_start < OCN_end ):
-				//match!
-
-			else:
-				// Match by name
-				search = grade_clipidentifier.slice(0, 8); // First 8 characters
-				if ( search in OCN_clip.filename )
-					//match!
-
-
-- [user match grades]
-	javascript bootstrap popup
-*/
-
 // GLOBAL SETTINGS - USER
 const APP_OCN_CLIP_LIST_IGNORE_FILE_EXTENSIONS = [ 'xml', 'ale', 'bin' ]; /* We know these are not valid clips */
 const APP_DEFAULT_FPS_UNSPECIFIED = 25;
-const APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES = 2;
+const APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES = 4;
 
 const ALE_COL_NAMES_CLIPNAME = [ 'Tape', 'Name', 'File Name', ]; /* In order of selection */
 const ALE_COL_NAMES_START_TIMECODE = [ 'Start', 'TC Start', 'StartTC', 'Start TC', ];
@@ -91,6 +55,7 @@ class App {
         this.items = {};
         this.items[APP_OCN_CLIP] = [];
         this.items[APP_GRADE] = [];
+        this.output_items_type = 'clips';
     }
     input_file_ocn(filetype, file_data, filename) {
         var file_ext = filetype.toLowerCase();
@@ -349,7 +314,7 @@ class App {
                 cell_matched_grade_identifier.textContent = matched_grade.identifier;
                 cell_matched_grade_scene.textContent = matched_grade.metadata.scene ?? '';
                 cell_matched_grade_take.textContent = matched_grade.metadata.take ?? '';
-                cell_matched_grade_sop.textContent = matched_grade.get_sop_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES, false, true);
+                cell_matched_grade_sop.textContent = matched_grade.get_sop_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES, true);
                 cell_matched_grade_sat.textContent = matched_grade.get_sat_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
             }
             else {
@@ -379,7 +344,7 @@ class App {
             cell_start_tc.textContent = grade.metadata.start_tc ?? '';
             cell_scene.textContent = grade.metadata.scene ?? '';
             cell_take.textContent = grade.metadata.take ?? '';
-            cell_sop.textContent = grade.get_sop_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
+            cell_sop.textContent = grade.get_sop_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES, true);
             cell_sat.textContent = grade.get_sat_as_string(APP_CDL_VALUES_DISPLAY_DECIMAL_PLACES);
         });
         // Update the status info
@@ -547,6 +512,9 @@ class App {
                 output_files.push( this.export_ccc_cdl([ grade ], 'cdl') );
             });
         }
+        else if ( file_type == 'csv' ) {
+            output_files.push( this.export_csv(this.items[APP_GRADE], 'csv') );
+        }
         return output_files;
     }
     export_ccc_cdl(grades, file_ext, use_ccc_identifier=false) {
@@ -559,6 +527,33 @@ class App {
             'file_ext': file_ext,
             'data': output_data,
         };
+    }
+    export_csv(grades) {
+        var output_table = [];
+        // First line
+        output_table.push([
+            'Source File Name',
+            'Identifier',
+            'SOP',
+            'SAT',
+        ]);
+        grades.sort()
+        grades.forEach( (grade) => {
+            var line = [];
+            line.push(
+                grade.source_file_name,
+                grade.identifier,
+                grade.get_sop_as_string(),
+                grade.get_sat_as_string(),
+            );
+            output_table.push(line);
+        });
+        var output_csv = Papa.unparse(output_table);
+        return {
+            'file_ext': 'csv',
+            'data': output_csv,
+        };
+        return;
     }
     export_edl(clips, paired_ccc=false) {
         var edl = new EDL;
@@ -635,10 +630,11 @@ function browser_output_file_as_download(data, filename) {
     );
     download.setAttribute('download', filename);
     download.style.display = 'none';
-    // Commence download
-    document.body.appendChild(download);
-    download.click();
-    document.body.removeChild(download);
+    setTimeout( () => {
+        document.body.appendChild(download);
+        download.click();
+        document.body.removeChild(download);
+    }, 1000);
 }
 
 
@@ -686,34 +682,51 @@ function event_grades_match_auto(e) {
 function event_grades_match_clear_all(e) {
     app.clear_matches_all();
 }
+function event_select_output_items_type(e) {
+    app.output_items_type = e.target.dataset.inputtype;
+    for ( var i = 0; app_output_btns.length > i; i++ ) {
+        var accepted_input_types = app_output_btns[i].dataset.inputtypes.split(',');
+        // Enable/disable depending on type (clips/grade)
+        if ( accepted_input_types.includes( app.output_items_type ) ) {
+            app_output_btns[i].classList.remove('disabled');
+        }
+        else {
+            app_output_btns[i].classList.add('disabled');
+        }
+    }
+}
 function event_request_output_file_all(e) {
     var file_type = e.target.dataset.outputfiletype;
-    var input_type = e.target.dataset.inputtype;
-    if ( input_type == 'clips' ) {
+    var input_type = app.output_items_type;
+    var output_file_prefix = app_output_filename.value;
+    if ( input_type == 'clips' && app.items[APP_OCN_CLIP].length > 0 ) {
         var output_files = app.output_ocn_clips_to_file(file_type);
-        var output_file_prefix = app_output_filename_ocn_clips.value;
     }
-    else if ( input_type == 'grades' ) {
+    else if ( input_type == 'grades' && app.items[APP_GRADE].length > 0  ) {
         var output_files = app.output_grades_to_file(file_type);
-        var output_file_prefix = app_output_filename_grades.value;
+    }
+    if ( !output_files ) {
+        // nothing to download
+        return;
     }
     user_log('Output files:', output_files);
-    output_files.forEach( (file) => {
-        if ( file.data ) {
-            file.size_bytes = file.data.length;
-            file.size = format_bytes(file.size_bytes);
-            file.name = output_file_prefix + '.' + file.file_ext;
-            user_log('\xa0\xa0\xa0\xa0' + file.name + ' (' + file.size + ')');
-            browser_output_file_as_download( file.data, file.name );
-        }
-    });
+    function _download(file) {
+        file.size_bytes = file.data.length;
+        file.size = format_bytes(file.size_bytes);
+        file.name = output_file_prefix + '.' + file.file_ext;
+        user_log('\xa0\xa0\xa0\xa0' + file.name + ' (' + file.size + ')');
+        browser_output_file_as_download( file.data, file.name );
+    }
+    for ( var i = 0; output_files.length > i; i++ ) {
+        _download(output_files[i]); 
+    }
 }
 
 // USER LOG
 function user_log(text) {
     var log = document.getElementById('app_log_output');
     var line = document.createElement('div');
-    line.textContent = format_time_as_HHMM() + ": " + text;
+    line.textContent = format_time_as_HHMMSS() + ": " + text;
     log.append(line);
     // And also send it to console.
     console.log(text);
@@ -748,13 +761,14 @@ function format_date_as_YYYYMMDD(date = new Date()) {
         padTo2Digits(date.getDate()),
     ].join('');
 }
-function format_time_as_HHMM(date = new Date()) {
+function format_time_as_HHMMSS(date = new Date()) {
     function padTo2Digits(num) {
         return num.toString().padStart(2, '0');
     }
     return [
         padTo2Digits(date.getHours()),
         padTo2Digits(date.getMinutes()),
+        padTo2Digits(date.getSeconds()),
     ].join(':');
 }
 function format_bytes(bytes, decimals) {
@@ -800,18 +814,22 @@ const app_match_btn_match_clear_all = document.getElementById('app_match_btn_mat
 app_match_btn_match_clear_all.addEventListener('click', event_grades_match_clear_all, false);
 
 // OUTPUTS
-const app_output_btn_ocn_clips = document.getElementsByClassName('app_output_btn_ocn_clips');
-for ( var i = 0; app_output_btn_ocn_clips.length > i; i++ ) {
-    app_output_btn_ocn_clips[i].addEventListener('click', event_request_output_file_all, false);
+// Radio button choice for output type - clips or grades
+const app_output_items_type_ocn_clips = document.getElementById('app_output_items_type_ocn_clips');
+const app_output_items_type_grades = document.getElementById('app_output_items_type_grades');
+app_output_items_type_ocn_clips.addEventListener('change', event_select_output_items_type, false);
+app_output_items_type_grades.addEventListener('change', event_select_output_items_type, false);
+// Filetype buttons: edl, csv, etc
+const app_output_btns = document.getElementsByClassName('app_output_btn');
+for ( var i = 0; app_output_btns.length > i; i++ ) {
+    app_output_btns[i].addEventListener('click', event_request_output_file_all, false);
 }
 
 // OUTPUT FILE PREFIX - default
-const app_output_filename_ocn_clips = document.getElementById('app_output_filename_ocn_clips');
-const app_output_filename_grades = document.getElementById('app_output_filename_grades');
-app_output_filename_ocn_clips.value = 'grade_helper_' + format_date_as_YYYYMMDD();
-app_output_filename_grades.value = 'grade_helper_' + format_date_as_YYYYMMDD();
+const app_output_filename = document.getElementById('app_output_filename');
+app_output_filename.value = 'grade_helper_' + format_date_as_YYYYMMDD();
 
-// EVENT HANDLERS
+// BROWSER BEHAVIOUR MODS
 // Prevent default drag behaviors
 ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event_name => {
     var dropareas = document.getElementsByClassName('droparea');
@@ -820,7 +838,6 @@ app_output_filename_grades.value = 'grade_helper_' + format_date_as_YYYYMMDD();
     }
     document.body.addEventListener(event_name, preventDefaults, false);
 })
-
 function preventDefaults(e) {
     e.preventDefault();
     e.stopPropagation();
