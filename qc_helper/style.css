@@ -67,7 +67,7 @@
     font-size: .75rem;
     font-family: var(--bs-font-monospace);
 }
-.grade_matched_clear {
+.remark_matched_clear {
     cursor:pointer;
 }
 

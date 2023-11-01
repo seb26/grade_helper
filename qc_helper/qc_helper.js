@@ -202,6 +202,7 @@ class App {
             // In grade_helper there is a complex way of setting identifiers
             // QC helper just lazy, set it once
             remark_item.identifier = entry['_name'];
+            remark_item.matched_ocn_clip = false;
             remark_item.metadata = {
               'source_file_name': source_file_name,
               'name': entry['_name'],
@@ -305,58 +306,54 @@ class App {
     // Clear the table on each update to keep it current
     tbody.innerHTML = '';
     // Then work.
-    var count_ocn_clips_that_had_matching_remarks = 0;
+    var count_of_matching_remarks = 0;
     this.items[APP_OCN_CLIP].forEach((ocn_clip, clip_index) => {
+      // New row
       var row = tbody.insertRow(-1);
       // OCN Clip Name
       var cell_source_file_name = row.insertCell(-1);
       cell_source_file_name.textContent = ocn_clip.name;
-      // OCN Clip Duration
-      /* not shown in qc_helper
-      var cell_duration = row.insertCell(-1);
-      var dur = ocn_clip.duration;
-      if ( dur.hours <= 0 ) {
-        cell_duration.textContent = `${dur.minutes}m ${dur.seconds}s`;
-      }
-      else {
-          cell_duration.textContent = dur;
-      }
-      */
-
       // OCN Clip Start TC
       var cell_start_tc = row.insertCell(-1);
       cell_start_tc.textContent = ocn_clip.start_tc;
-      var cell_matched_remark_clear = row.insertCell(-1);
-      var cell_matched_remark_identifier = row.insertCell(-1);
-      var cell_matched_remark_start_tc = row.insertCell(-1);
-      var cell_matched_remark_comment = row.insertCell(-1);
-      // Fill with matched remarks
       if (ocn_clip['matched_remarks'].length > 0) {
-        count_ocn_clips_that_had_matching_remarks += 1;
-        // Clear button
-        var btn_matched_remark_clear = document.createElement('span');
-        btn_matched_remark_clear.classList.add('link-danger');
-        btn_matched_remark_clear.classList.add('remark_matched_clear');
-        btn_matched_remark_clear.dataset.clip_index = clip_index;
-        btn_matched_remark_clear.textContent = 'x';
-        // Event handler for the clear button
-        btn_matched_remark_clear.addEventListener('click', function() {
-          this.clear_matches_from_clip(ocn_clip, clip_index);
-        }.bind(this), false);
-        // Add the button
-        cell_matched_remark_clear.appendChild(btn_matched_remark_clear);
-        // Add in matched remark display info
-        var matched_remark = ocn_clip['matched_remarks'][0];
-        cell_matched_remark_identifier.textContent = matched_remark.identifier;
-        cell_matched_remark_start_tc.textContent = matched_remark.metadata.start_tc ?? '';
-        cell_matched_remark_comment.textContent = matched_remark.metadata.comment ?? '';
-      } else {
-        cell_matched_remark_identifier.textContent = '';
+        ocn_clip['matched_remarks'].forEach( (remark, remark_index) => {
+          count_of_matching_remarks += 1;
+          // For 2nd, 3rd, etc remarks for a single OCN clip,
+          // Add a new row
+          if ( remark_index > 0 ) {
+            row = tbody.insertRow(-1);
+            // And two blank cells to indicate DITTO above ocn clip
+            row.insertCell(-1);
+            row.insertCell(-1);
+          }
+          // Cells for Match detials
+          var cell_matched_remark_clear = row.insertCell(-1); // 'Clear'/'X' button
+          var cell_matched_remark_identifier = row.insertCell(-1);
+          var cell_matched_remark_start_tc = row.insertCell(-1);
+          var cell_matched_remark_comment = row.insertCell(-1);
+          // Clear/'X' button
+          var btn_matched_remark_clear = document.createElement('span');
+          btn_matched_remark_clear.classList.add('link-danger');
+          btn_matched_remark_clear.classList.add('remark_matched_clear');
+          btn_matched_remark_clear.dataset.clip_index = clip_index;
+          btn_matched_remark_clear.textContent = 'x';
+          // Event handler for the clear button
+          btn_matched_remark_clear.addEventListener('click', function() {
+            this.clear_match_from_clip(ocn_clip, clip_index, remark_index)
+          }.bind(this), false);
+          // Add the button
+          cell_matched_remark_clear.appendChild(btn_matched_remark_clear);
+          // Add in matched remark display info
+          cell_matched_remark_identifier.textContent = remark.identifier;
+          cell_matched_remark_start_tc.textContent = remark.metadata.start_tc ?? '';
+          cell_matched_remark_comment.textContent = remark.metadata.comment ?? '';
+        });
       }
     });
     // Update the status info
     var match_statusinfo_count_of_matched_remarks = document.getElementById('app_match_statusinfo_count_of_matched_remarks');
-    match_statusinfo_count_of_matched_remarks.innerHTML = count_ocn_clips_that_had_matching_remarks + ' matching remarks';
+    match_statusinfo_count_of_matched_remarks.innerHTML = count_of_matching_remarks + ' matching remarks';
     var ocn_clips_statusinfo = document.getElementById('app_ocn_clips_statusinfo');
     ocn_clips_statusinfo.innerHTML = pluralise(this.items[APP_OCN_CLIP].length, 'clip');
   }
@@ -377,6 +374,78 @@ class App {
     // Update the status info
     var remarks_statusinfo = document.getElementById('app_remarks_statusinfo');
     remarks_statusinfo.innerHTML = pluralise(this.items[APP_REMARK].length, 'remark');
+  }
+  match_remarks_to_ocn_auto() {
+    function _apply_match(ocn_clip, remark, fps) {
+      remark.matched_ocn_clip = ocn_clip;
+      remark.start_tc = new Timecode(remark.metadata.start_tc, fps);
+      ocn_clip.matched_remarks.push(remark);
+    }
+    this.items[APP_REMARK].forEach((remark) => {
+      var remark_match_found = false;
+      this.items[APP_OCN_CLIP].every((ocn_clip) => {
+        // First establish FPS
+        var fps;
+        if (remark.fps) {
+          fps = remark.fps;
+        } else if (ocn_clip.fps) {
+          fps = ocn_clip.fps;
+        } else {
+          fps = APP_DEFAULT_FPS_UNSPECIFIED;
+        }
+        // 1. MATCH BY CLIP IDENTIFIER SIMILARITY
+        const patterns_clipidentifier = [
+          /([a-zA-Z][a-zA-Z]?\d{3,4}_?[a-zA-Z][a-zA-Z]?\d{3,4})/g, // ARRI, DJI, RED, SONY
+          /([a-zA-Z]\d{3,4}_?(\d{8}\_)?[a-zA-Z]?\d{3})/g, // BLACKMAGIC
+        ];
+        var match_found_by_pattern = false;
+        patterns_clipidentifier.every((pattern) => {
+          var ocn_clip_name_match = ocn_clip.name.match(pattern);
+          var remark_clip_name_match = remark.identifier.match(pattern);
+          if ((ocn_clip_name_match && remark_clip_name_match)) {
+            if (ocn_clip_name_match[0] == remark_clip_name_match[0]) {
+              // OCN clipidentifier matches the remark clip identifier
+              match_found_by_pattern = true;
+              return false;
+            }
+          }
+          return true;
+        });
+        if ( !match_found_by_pattern ) {
+          // If no match by identifier, no point judging further.
+          return true; // Next OCN clip
+        }
+        else {
+          // 2. THEN MATCH BY TIMECODE
+          // Gather start & finish times
+          if (remark.metadata.start_tc && ocn_clip.start_tc && ocn_clip.end_tc) {
+            var ocn_clip_start_f = new Timecode(ocn_clip.start_tc, fps).frameCount();
+            var ocn_clip_end_f = new Timecode(ocn_clip.end_tc, fps).frameCount();
+            var remark_start_f = new Timecode(remark.metadata.start_tc, fps).frameCount();
+            if (remark.metadata.end_tc) {
+              var remark_end_f = new Timecode(remark.metadata.end_tc, fps).frameCount();
+            } else {
+              // If no end TC is available, substitute with start (assuming 1 frame);
+              var remark_end_f = new Timecode(remark.metadata.start_tc, fps).frameCount() + 1;
+            }
+            // Check for match
+            if ( overlap(ocn_clip_start_f, ocn_clip_end_f, remark_start_f, remark_end_f) ) {
+              _apply_match(ocn_clip, remark, fps);
+              remark_match_found = true;
+              return false; // Finished with OCN clips
+            }
+          }
+        }
+        return true; // Next OCN clip
+      });
+      if ( !remark_match_found ) {
+        user_log(
+          `This remark had no matching OCN clip: ${remark.identifier}: ${remark.metadata.comment}`
+        );
+      }
+      return true; // Next remark
+    });
+    this.populate_ocn_clips();
   }
   delete_items_from_input_file(category, file_object) {
     // Repopulate items that don't match the ID - aka they are removed
@@ -405,192 +474,139 @@ class App {
     // Repopulate
     this.populate_items_by_category(APP_OCN_CLIP);
   }
-  clear_matches_from_clip(ocn_clip) {
+  clear_match_from_clip(ocn_clip, clip_index, remark_index) {
+    ocn_clip.matched_remarks.pop(remark_index);
+    this.populate_items_by_category(APP_OCN_CLIP);
+  }
+  clear_all_matches_from_clip(ocn_clip) {
     ocn_clip.matched_remarks.length = 0;
     // Repopulate
     this.populate_items_by_category(APP_OCN_CLIP);
   }
-  match_remarks_to_ocn_auto() {
-    this.items[APP_REMARK].forEach((remark) => {
-
-        var match_found = false;
-        while (!match_found) {
-          this.items[APP_OCN_CLIP].forEach((ocn_clip) => {
-              // First establish FPS
-              var fps;
-              if (remark.fps) {
-                fps = remark.fps;
-              } else if (ocn_clip.fps) {
-                fps = ocn_clip.fps;
-              } else {
-                fps = APP_DEFAULT_FPS_UNSPECIFIED;
-              }
-
-              // 1. MATCH BY CLIP IDENTIFIER SIMILARITY
-              const patterns_clipidentifier = [
-                /([a-zA-Z][a-zA-Z]?\d{3,4}_?[a-zA-Z][a-zA-Z]?\d{3,4})/g, // ARRI, DJI, RED, SONY
-                /([a-zA-Z]\d{3,4}_?(\d{8}\_)?[a-zA-Z]?\d{3})/g, // BLACKMAGIC
-              ];
-              patterns_clipidentifier.every((pattern) => {
-                  var ocn_clip_name_match = ocn_clip.name.match(pattern);
-                  var remark_clip_name_match = remark.identifier.match(pattern);
-                  if ((ocn_clip_name_match && remark_clip_name_match)) {
-                    if (ocn_clip_name_match[0] == remark_clip_name_match[0]) {
-                      // OCN clipidentifier matches the remark clip identifier
-                      // e.g. A001C001 is present somewhere in the remark label
-                      // Therefore, found a potential match!
-                      // Need to confirm it with Timecode.
-
-                      return false;
-                    }
-                    // 2. AND MATCH BY TIMECODE
-                    if (remark.metadata.start_tc && ocn_clip.start_tc && ocn_clip.end_tc) {
-                      // Gather start & finish times
-                      var ocn_clip_start_f = new Timecode(ocn_clip.start_tc, fps).frameCount();
-                      var ocn_clip_end_f = new Timecode(ocn_clip.end_tc, fps).frameCount();
-                      var remark_start_f = new Timecode(remark.metadata.start_tc, fps).frameCount();
-                      if (remark.metadata.end_tc) {
-                        var remark_end_f = new Timecode(remark.metadata.end_tc, fps).frameCount();
-                      } else {
-                        // If no end TC is available, substitute with start (assuming 1 frame);
-                        var remark_end_f = new Timecode(remark.metadata.start_tc, fps).frameCount() + 1;
-                      }
-                      // Overlapping logic
-                      function overlap(x1, x2, y1, y2) {
-                        return (x1 <= y2 && y1 <= x2);
-                      }
-                      if (overlap(ocn_clip_start_f, ocn_clip_end_f, remark_start_f, remark_end_f)) {
-                        // Found a match!
-                        // Update its identifier
-                        // Save it to the clip.
-                        remark.start_tc = new Timecode(remark.metadata.start_tc, fps);
-                        ocn_clip.matched_remarks.push(remark);
-                        match_found = true;
-                      } else {
-                        // No match
-                      }
-                    }
-                  } else {
-                    // No match
-                  }
-                }
-              });
-          });
+  output_ocn_clips_to_file(file_type) {
+    var output_clips = [];
+    var output_remarks = [];
+    var output_clips_with_remarks = [];
+    var output_files = [];
+    this.items[APP_OCN_CLIP].forEach((ocn_clip) => {
+      // Save
+      output_clips.push(ocn_clip);
+      if (ocn_clip.matched_remarks.length > 0) {
+        output_clips_with_remarks.push(ocn_clip);
+        var remark = ocn_clip.matched_remarks[0];
+        output_remarks.push(remark);
       }
     });
-  this.populate_ocn_clips();
-}
-output_ocn_clips_to_file(file_type) {
-  var output_clips = [];
-  var output_remarks = [];
-  var output_clips_with_remarks = [];
-  var output_files = [];
-  this.items[APP_OCN_CLIP].forEach((ocn_clip) => {
-    // Save
-    output_clips.push(ocn_clip);
-    if (ocn_clip.matched_remarks.length > 0) {
-      output_clips_with_remarks.push(ocn_clip);
-      var remark = ocn_clip.matched_remarks[0];
-      output_remarks.push(remark);
+    // Check for "Include only clips with remark"
+    if (this.flag_include_only_clips_with_remark) {
+      output_clips = output_clips_with_remarks;
     }
-  });
-  // Check for "Include only clips with remark"
-  if (this.flag_include_only_clips_with_remark) {
-    output_clips = output_clips_with_remarks;
+    if (file_type == 'edl') {
+      output_files.push(this.export_edl(output_clips, 'name'));
+    } else if (file_type == 'edl+markerlist') {
+      output_files.push(this.export_edl(output_clips, 'name'));
+      output_files.push(this.export_markerlist(output_clips, 'name'));
+    }
+    console.log('520', output_files);
+    return output_files;
   }
-  if (file_type == 'edl') {
-    output_files.push(this.export_edl(output_clips, 'name'));
-  } else if (file_type == 'edl+markerlist') {
-    output_files.push(this.export_edl(output_clips, 'name'));
-    output_files.push(this.export_markerlist(output_clips, 'name'));
+  output_remarks_to_file(file_type) {
+    var output_files = []
+    return output_files;
   }
-  console.log('520', output_files);
-  return output_files;
-}
-output_remarks_to_file(file_type) {
-  var output_files = []
-  return output_files;
-}
-export_edl(clips, sort_by_attribute = false, export_events = false) {
-  var edl = new EDL;
-  var paired_ccc_index = 0;
-  var remarks_with_paired_ccc = [];
-  // Sorting alphabetically
-  if (sort_by_attribute) {
-    clips.sort(function(a, b) {
-      var textA = a[sort_by_attribute].toUpperCase();
-      var textB = b[sort_by_attribute].toUpperCase();
-      return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
-    });
-  }
-  clips.forEach((clip) => {
-    var edl_clip = new EDLClip(
-      clip.tape,
-      clip.start_tc,
-      clip.end_tc,
-      clip.fps,
-    );
-    var events = edl.add_event_to_timeline_sequentially(edl_clip);
-  });
-  if (export_events) {
-    return edl;
-  } else {
-    return {
-      'file_ext': 'edl',
-      'data': edl.export(),
-      'remarks': remarks_with_paired_ccc ?? undefined,
-    };
-  }
-}
-export_markerlist(clips) {
-  // Markerlist format
-  // Process an EDL but don't return a file, instead list of events
-  var EDL = this.export_edl(clips, 'name', true);
-  // Gather the clips that have matching remarks
-  var clips_with_matching_remarks = [];
-  var markerlist_table = [];
-  clips.forEach((clip) => {
-    if (clip.matched_remarks.length > 0) {
-      clip.matched_remarks.forEach((remark) => {
-        console.log('562', clip, remark);
-        clips_with_matching_remarks.push([
-          clip,
-          remark
-        ]);
+  export_edl(clips, sort_by_attribute = false, export_events = false) {
+    var edl = new EDL;
+    var paired_ccc_index = 0;
+    var remarks_with_paired_ccc = [];
+    // Sorting alphabetically
+    if (sort_by_attribute) {
+      clips.sort(function(a, b) {
+        var textA = a[sort_by_attribute].toUpperCase();
+        var textB = b[sort_by_attribute].toUpperCase();
+        return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
       });
     }
-  });
-  clips_with_matching_remarks.forEach((clip) => {
-    EDL.events.forEach((ev) => {
-      // In order to find Record TC, match up the Remark to the EDL event
-      if (ev.reel == clip[0].tape) {
-        var remark_tc_rec_f = ev.record_tc_in + (clip[1].start_tc - ev.source_tc_in);
-        var remark_tc_rec = new Timecode(remark_tc_rec_f, ev.fps);
+    clips.forEach((clip) => {
+      var edl_clip = new EDLClip(
+        clip.tape,
+        clip.start_tc,
+        clip.end_tc,
+        clip.fps,
+      );
+      var events = edl.add_event_to_timeline_sequentially(edl_clip);
+    });
+    if (export_events) {
+      return edl;
+    } else {
+      return {
+        'file_ext': 'edl',
+        'data': edl.export(),
+        'remarks': remarks_with_paired_ccc ?? undefined,
+      };
+    }
+  }
+  export_markerlist(clips) {
+    // Markerlist format
+    // Process an EDL but don't return a file, instead list of events
+    var EDL = this.export_edl(clips, 'name', true);
+    var markerlist_table = [];
+    // Gather the clips that have matching remarks
+    var clips_with_matching_remarks = clips.filter( clip => clip.matched_remarks.length > 0 );
+    // To match EDL events to remark TC
+    function _match_remark_tc_to_edl_event_tc(remark, edl_event) {
+      if ( remark.matched_ocn_clip ) {
+        // Exact match to Tape name
+        if ( remark.matched_ocn_clip.tape == edl_event.reel ) {
+          // Timecode relevancy
+          console.log('561', edl_event);
+          if ( overlap(
+              edl_event.source_tc_in.frameCount(),
+              edl_event.source_tc_out.frameCount(),
+              remark.start_tc.frameCount(),
+              remark.start_tc.frameCount() + 1,
+            )
+          ) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    function _get_relative_tc_for_remark(remark, edl_event) {
+      var remark_tc_rec_f = edl_event.record_tc_in + (remark.start_tc - edl_event.source_tc_in);
+      return new Timecode(remark_tc_rec_f, edl_event.fps);    
+    }
+    clips_with_matching_remarks.forEach((clip) => {
+      clip.matched_remarks.forEach( (remark) => {
+        var edl_event = EDL.events.find( edl_event => _match_remark_tc_to_edl_event_tc(
+          remark,
+          edl_event )
+        );
+        console.log('579', clip, remark, edl_event);
         // Write to the table
         markerlist_table.push([
           QC_MARKERLIST_MARKER_TITLE,
-          remark_tc_rec.toString(),
+          _get_relative_tc_for_remark(remark, edl_event).toString(),
           QC_MARKERLIST_VIDEO_TRACK,
           QC_MARKERLIST_COLOUR,
-          clip[1].metadata.comment,
+          remark.metadata.comment,
           QC_MARKERLIST_DURATION,
         ]);
-      }
-    });
-  });
-  // Create TSV for Avid Media Composer
-  var markerlist_txt = Papa.unparse(
-    markerlist_table, {
-      'delimiter': '\t',
-      'newline': '\n',
-    }
-  );
-  return {
-    'file_ext': 'txt',
-    'data': markerlist_txt,
-  };
 
-}
+      });
+    });
+    // Create TSV for Avid Media Composer
+    var markerlist_txt = Papa.unparse(
+      markerlist_table, {
+        'delimiter': '\t',
+        'newline': '\n',
+      }
+    );
+    return {
+      'file_ext': 'txt',
+      'data': markerlist_txt,
+    };
+  }
 }
 
 // BROWSER FILE HANDLING
@@ -707,7 +723,7 @@ function event_flag_include_only_clips_with_remark(e) {
 function user_log(text) {
   var log = document.getElementById('app_log_output');
   var line = document.createElement('div');
-  line.textContent = format_time_as_HHMM() + ": " + text;
+  line.textContent = format_time_as_HHMMSS() + ": " + text;
   log.append(line);
   // And also send it to console.
   console.log(text);
@@ -745,13 +761,14 @@ function format_date_as_YYYYMMDD(date = new Date()) {
   ].join('');
 }
 
-function format_time_as_HHMM(date = new Date()) {
+function format_time_as_HHMMSS(date = new Date()) {
   function padTo2Digits(num) {
     return num.toString().padStart(2, '0');
   }
   return [
     padTo2Digits(date.getHours()),
     padTo2Digits(date.getMinutes()),
+    padTo2Digits(date.getSeconds()),
   ].join(':');
 }
 
@@ -764,7 +781,10 @@ function format_bytes(bytes, decimals) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-
+// UTILITIES
+function overlap(x1, x2, y1, y2) {
+  return (x1 <= y2 && y1 <= x2);
+}
 
 
 // APP
