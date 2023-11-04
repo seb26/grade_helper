@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "edl-genius": "^3.4.10",
-    "long": "^5.2.0",
-    "watchify": "^4.0.0"
-  }
-}
