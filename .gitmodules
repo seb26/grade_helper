@@ -1,0 +1,3 @@
+[submodule "lib_ale_cdl_edl"]
+	path = lib_ale_cdl_edl
+	url = git@github.com:seb26/lib_ale_cdl_edl.git

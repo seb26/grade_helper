@@ -751,24 +751,31 @@ function user_input_warnings_clear_all() {
 }
 
 // FORMATTING
+function pad_to_digits(num, dp=2) {
+    return num.toString().padStart(dp, '0');
+}
 function format_date_as_YYYYMMDD(date = new Date()) {
-    function padTo2Digits(num) {
-        return num.toString().padStart(2, '0');
-    }
     return [
         date.getFullYear(),
-        padTo2Digits(date.getMonth() + 1),
-        padTo2Digits(date.getDate()),
+        pad_to_digits(date.getMonth() + 1),
+        pad_to_digits(date.getDate()),
+    ].join('');
+}
+function format_date_as_YYYYMMDD_HHMM(date = new Date()) {
+    return [
+        date.getFullYear(),
+        pad_to_digits(date.getMonth() + 1),
+        pad_to_digits(date.getDate()),
+        '_',
+        pad_to_digits(date.getHours()),
+        pad_to_digits(date.getMinutes()),
     ].join('');
 }
 function format_time_as_HHMMSS(date = new Date()) {
-    function padTo2Digits(num) {
-        return num.toString().padStart(2, '0');
-    }
     return [
-        padTo2Digits(date.getHours()),
-        padTo2Digits(date.getMinutes()),
-        padTo2Digits(date.getSeconds()),
+        pad_to_digits(date.getHours()),
+        pad_to_digits(date.getMinutes()),
+        pad_to_digits(date.getSeconds()),
     ].join(':');
 }
 function format_bytes(bytes, decimals) {
@@ -827,7 +834,7 @@ for ( var i = 0; app_output_btns.length > i; i++ ) {
 
 // OUTPUT FILE PREFIX - default
 const app_output_filename = document.getElementById('app_output_filename');
-app_output_filename.value = 'grade_helper_' + format_date_as_YYYYMMDD();
+app_output_filename.value = 'grade_helper_' + format_date_as_YYYYMMDD_HHMM();
 
 // BROWSER BEHAVIOUR MODS
 // Prevent default drag behaviors
