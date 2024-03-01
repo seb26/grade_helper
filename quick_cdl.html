@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Quick CDL</title>
+    <link rel="stylesheet" href="resources/bootstrap-5.3.2-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="quick_cdl.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <h1>Quick CDL</h1>
+        <h5>v0</h5>
+        <p>Quickly insert a CDL line from an Avid Media Composer column, LiveGrade project, or other data source. Convert it to a single CDL file (<code>.cdl</code>).</p>
+        <br />
+        <p>Need to insert multiple CDL lines? Use <a href="grade_helper.html">Grade Helper</a>.</p>
+      </div>
+      <div class="row">
+        <div class="col section input">
+          <h3>Insert a single CDL line</h3>
+          <form>
+            <label for="app_input_cdl_oneline" class="form-label">
+              In a one-line format. Example: 1.0000  (1.0692 1.0648 1.0692) (-0.0362 -0.0318 -0.0362) (1.0000 1.0000 1.0000)
+            </label>
+            <div class="row">
+              <div class="col-11">
+                <input type="text" class="form-control" id="app_input_cdl_oneline" placeholder="Paste CDL line here">
+              </div>
+              <div class="col-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                  <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="alert alert-warning input_warning" role="alert" id="app_input_warning" style="display:none;"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row export my-3">
+        <div class="col section">
+          <div class="row">
+            <h3 class="mb-3">Export</h3>
+            <div class="col-4">
+              <input class="form-control" type="text" id="app_output_filename" placeholder="Filename">
+            </div>
+            <div class="col-3">
+              <div class="btn btn-outline-primary app_output_btn" data-inputtypes="clips,grades" data-outputfiletype="cdl-single">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+              </svg>
+              &nbsp;CDL
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript" src="lib/uuidv4.min.js"></script>
+    <script type="text/javascript" src="lib/papaparse.min.js"></script>
+    <script type="text/javascript" src="lib_ale_cdl_edl/lib/cdl.js"></script>
+    <script type="text/javascript" src="resources/bootstrap-5.3.2-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="quick_cdl.js"></script>
+  </body>
+</html>

@@ -1,0 +1,136 @@
+/* UTILITIES */
+.cursor-hover {
+    cursor:pointer;
+}
+.col-1-5 {
+    width: 11.11%;
+}
+
+/* MAIN */
+
+.section {
+    padding:1rem;
+}
+.input_warning {
+}
+.input {
+    border-radius:.5rem;
+    background:#d4e5ff;
+}
+
+.droparea {
+    padding: .5rem;
+}
+
+.filelist_group {
+    list-style:none;
+    padding:0 .5rem;
+}
+.filelist_item 
+{
+    font-size:.85rem;
+    font-family: var(--bs-font-monospace)   ;
+}
+.filelist_item_name {
+
+}
+.filelist_item_eventcount
+{
+    margin-right:.5rem;
+    font-weight:bold;
+}
+.filelist_item_delete {
+    margin-right:.5rem;
+    text-decoration:none;
+}
+.filelist_item_delete:hover {
+    text-decoration:underline;
+    color:red;
+}
+.filelist_toolbuttons {
+    padding:.5rem;
+}
+
+#ocn_clips_section {
+    background: #ccc;
+}
+
+#grades_section {
+    background: #9ec5fe;
+}
+
+.items {
+    border-radius:.5rem;
+}
+.items_table_wrapper {
+    max-height: 40vh;
+    overflow-y: scroll;
+}
+
+.items_table thead {
+    position:sticky;
+    top:0;
+}
+
+.items_table td {
+    font-size: .75rem;
+    font-family: var(--bs-font-monospace);
+}
+.grade_matched_clear {
+    cursor:pointer;
+}
+
+th.col-plain {
+    background-color:#ccc;
+}
+#app_grades_table th.col-plain {
+    background-color:#9ec5fe;
+}
+
+th.col-graded {
+    background-color: #3d8bfd;
+    color: #fff;
+}
+td.col-graded {
+    background-color: #6ea8fe;
+    color: #fff;
+    font-weight: bold;
+}
+
+.app_match_grades {
+    background:#ccc;
+    text-align:center;
+    padding:.5rem;
+}
+
+
+
+.export {
+    background: #ddd;
+    border-radius:.5rem;
+}
+.export input {
+    font-family: var(--bs-font-monospace);
+    font-size:.8rem;
+}
+.app_output_btn {
+    margin-left:0.25rem;
+}
+.app_output_btn.disabled {
+    color:grey;
+    border-color:grey;
+}
+.app_output_items_type_buttons {
+    margin-left:.5rem;
+}
+
+.log {
+    background: #eee;
+    border-radius:.5rem;
+}
+
+.log-output {
+    height:40vh;
+    overflow-y:scroll;
+    font-family: monospace;
+}
